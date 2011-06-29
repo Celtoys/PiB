@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Komodo Project File - DO NOT EDIT -->
 <project id="05a2bbf0-117c-43f2-ad1f-2707e0a1928b" kpf_version="5" name="pib.komodoproject">
-<file id="0ae1ee4b-7f84-492b-9eea-1b4fbd60b3dc" idref="05a2bbf0-117c-43f2-ad1f-2707e0a1928b" name="pibfile" url="pibfile">
-</file>
 <file id="0fc22867-91fa-4b55-87df-1cf6c217ab78" idref="05a2bbf0-117c-43f2-ad1f-2707e0a1928b" name="PiB.py" url="PiB.py">
 </file>
 <file id="184b522e-efc4-4471-bab1-3daf8300d640" idref="05a2bbf0-117c-43f2-ad1f-2707e0a1928b" name="Process.py" url="Process.py">
