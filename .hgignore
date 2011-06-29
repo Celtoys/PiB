@@ -1,0 +1,10 @@
+syntax: glob
+Python/__pycache__/*
+Test/bin/*
+Test/obj/*
+Test/TestProject.ncb
+Test/TestProject.sln
+Test/TestProject.suo
+Test/metadata.pib
+Test/Code/TestProject.vcproj
+Test/Code/TestProject.vcproj.*
