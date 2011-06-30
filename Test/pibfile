@@ -33,9 +33,7 @@ cpp_files = Glob("Code", "*.cpp")
 h_files = Glob("Code", "*.h")
 
 # Compile    
-obj_files = [ ]
-for file in cpp_files:
-    obj_files += [ env.CPPFile(file) ]
+obj_files = [ env.CPPFile(file) for file in cpp_files ]
 
 # Link
 exe = env.Link("Out.exe", obj_files)
