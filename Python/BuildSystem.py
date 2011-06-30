@@ -28,6 +28,7 @@
 #
 
 import os
+import sys
 import pickle
 import binascii
 import Utils
@@ -181,7 +182,12 @@ class Environment:
         config.LibOptions = MSVCPlatform.VCLibOptions(MSVCPlatform.VCBaseConfig.RELEASE)
         self.Configs[config.CmdLineArg] = config
 
+        # Apply the config from the command-line
         self.CurrentConfig = self.Configs["debug"]
+        for name, config in self.Configs.items():
+            if name in sys.argv:
+                self.CurrentConfig = config
+                break
 
         # Load existing file metadata from disk
         self.FileMap = { }
@@ -324,3 +330,17 @@ class Environment:
         output_files = node.GetOutputFiles(self)
         for file in output_files:
             Utils.RemoveFile(file)
+    
+    def Build(self, build_graphs):
+        
+        # Clean outputs?
+        if "clean" in sys.argv or "rebuild" in sys.argv:
+            print("PiB Cleaning...")
+            [ self.ExecuteNodeClean(node) for node in build_graphs ]
+        
+        # Build the graph?
+        if "rebuild" in sys.argv or not "clean" in sys.argv:
+            print("PiB Building...")
+            [ self.ExecuteNodeBuild(node) for node in build_graphs ]
+            self.SaveFileMetadata()
+            

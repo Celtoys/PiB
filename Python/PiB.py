@@ -54,89 +54,34 @@
 
 import os
 import sys
+
+
+# See if the caller wants to use a custom build script name/location
+pibfile = "pibfile"
+if "-pf" in sys.argv:
+    i = sys.argv.index("-pf") + 1
+    if i < len(sys.argv):
+        pibfile = sys.argv[i]
+
+# Load the build script file
+if not os.path.exists(pibfile):
+    print("ERROR: No pibfile found")
+    sys.exit(1)
+code = None
+with open(pibfile) as f:
+    code = f.read()
+
+    # Inject the environment initialisation code
+prologue = """
 from MSVCPlatform import *
+from MSVCGeneration import *
 from BuildSystem import *
+from Utils import *
 
-
-def LoadBuildScript(env):
-
-    # See if the caller wants to use a custom build script name/location
-    pibfile = "pibfile"
-    if "-pf" in sys.argv:
-        i = sys.argv.index("-pf") + 1
-        if i < len(sys.argv):
-            pibfile = sys.argv[i]
-
-    # Load the build script file
-    if not os.path.exists(pibfile):
-        print("ERROR: No pibfile found")
-        return None
-
-    # Inject all the needed modules into the build script
-    build_script = { }
-    exec("from MSVCPlatform import *", build_script)
-    exec("from MSVCGeneration import *", build_script)
-    exec("from BuildSystem import *", build_script)
-    exec("from Utils import *", build_script)
-
-    # Execute each line
-    with open(pibfile) as f:
-        exec(f.read(), build_script)
-
-    return build_script
-
-
-def PreBuild(env, build_script):
-
-    if "PreBuild" in build_script:
-        build_script["PreBuild"](env)
-
-
-def Clean(env, build_graphs):
-
-    print("PiB Cleaning...")
-    for node in build_graphs:
-        env.ExecuteNodeClean(node)
-
-
-def Build(env, build_graphs):
-
-    print("PiB Building...")
-    for node in build_graphs:
-        env.ExecuteNodeBuild(node)
-
-    env.SaveFileMetadata()
-
-
-def PostBuild(env, build_script):
-
-    if "PostBuild" in build_script:
-        build_script["PostBuild"](env)
-
-    
-# Get the main build environment
 env = Environment.New()
 if env == None:
     sys.exit(1)
+"""
+code = prologue + code
 
-# Load the pibfile
-build_script = LoadBuildScript(env)
-if build_script == None:
-    sys.exit(1)
-
-# Execute any pre build steps
-PreBuild(env, build_script)
-
-# Construct the explicit build graphs
-build_graphs = build_script["Build"](env)
-
-if "clean" in sys.argv:
-    Clean(env, build_graphs)
-elif "rebuild" in sys.argv:
-    Clean(env, build_graphs)
-    Build(env, build_graphs)
-else:
-    Build(env, build_graphs)
-
-# Execute any post build steps
-PostBuild(env, build_script)
+exec(prologue + code)

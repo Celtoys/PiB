@@ -32,28 +32,15 @@ import sys
 cpp_files = Glob("Code", "*.cpp")
 h_files = Glob("Code", "*.h")
 
+# Compile    
+obj_files = [ ]
+for file in cpp_files:
+    obj_files += [ env.CPPFile(file) ]
 
-def PreBuild(env):
+# Link
+exe = env.Link("Out.exe", obj_files)
+env.Build([exe])
 
-    # TODO: Formalise the concept of a config and move this code into the build system?
-    # Apply the config from the command-line
-    for name, config in env.Configs.items():
-        if name in sys.argv:
-            env.CurrentConfig = config
-            break
-
-    
-def Build(env):
-
-    obj_files = [ ]
-    for file in cpp_files:
-        obj_files += [ env.CPPFile(file) ]
-
-    exe = env.Link("Out.exe", obj_files)
-    return [ exe ]
-
-
-def PostBuild(env):
-
-    a = VCGenerateProjectFile(env, "Code/TestProject", cpp_files + h_files)
-    VCGenerateSolutionFile(env, "TestProject", { "Code/TestProject" : a })
+# Generate projects
+a = VCGenerateProjectFile(env, "Code/TestProject", cpp_files + h_files)
+VCGenerateSolutionFile(env, "TestProject", { "Code/TestProject" : a })
