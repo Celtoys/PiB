@@ -127,15 +127,17 @@ class FileNode (Node):
 #
 class Config:
 
-    def __init__(self):
+    def __init__(self, name, arg, base_config_options):
 
-        self.Name = None
-        self.CmdLineArg = None
-        self.IntermediatePath = None
-        self.OutputPath = None
-        self.CPPOptions = None
-        self.LinkOptions = None
-        self.LibOptions = None
+        self.Name = name
+        self.CmdLineArg = arg
+        self.IntermediatePath = "obj/" + name
+        self.OutputPath = "bin/" + name
+        self.CPPOptions = MSVCPlatform.VCCompileOptions(base_config_options)
+        self.LinkOptions = MSVCPlatform.VCLinkOptions(base_config_options)
+        self.LibOptions =MSVCPlatform.VCLibOptions(base_config_options)
+    
+    
 
 
 #
@@ -158,29 +160,10 @@ class Environment:
 
         self.EnvironmentVariables = envvars
         
+        # Set up some default configurations
         self.Configs = { }
-
-        # Setup a default debug configuration
-        config = Config()
-        config.Name = "Debug"
-        config.CmdLineArg = "debug"
-        config.IntermediatePath = "obj/Debug"
-        config.OutputPath = "bin/Debug"
-        config.CPPOptions = MSVCPlatform.VCCompileOptions(MSVCPlatform.VCBaseConfig.DEBUG)
-        config.LinkOptions = MSVCPlatform.VCLinkOptions(MSVCPlatform.VCBaseConfig.DEBUG)
-        config.LibOptions = MSVCPlatform.VCLibOptions(MSVCPlatform.VCBaseConfig.DEBUG)
-        self.Configs[config.CmdLineArg] = config
-        
-        # Setup a default release configuration
-        config = Config()
-        config.Name = "Release"
-        config.CmdLineArg = "release"
-        config.IntermediatePath = "obj/Release"
-        config.OutputPath = "bin/Release"
-        config.CPPOptions = MSVCPlatform.VCCompileOptions(MSVCPlatform.VCBaseConfig.RELEASE)
-        config.LinkOptions = MSVCPlatform.VCLinkOptions(MSVCPlatform.VCBaseConfig.RELEASE)
-        config.LibOptions = MSVCPlatform.VCLibOptions(MSVCPlatform.VCBaseConfig.RELEASE)
-        self.Configs[config.CmdLineArg] = config
+        self.Configs["debug"] = Config("Debug", "debug", MSVCPlatform.VCBaseConfig.DEBUG)
+        self.Configs["release"] = Config("Release", "release", MSVCPlatform.VCBaseConfig.RELEASE)
 
         # Apply the config from the command-line
         self.CurrentConfig = self.Configs["debug"]
