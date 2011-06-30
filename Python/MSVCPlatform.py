@@ -235,6 +235,7 @@ class VCCompileOptions:
         self.Optimisations = VCOptimisations.DISABLE
         self.WholeProgramOptimisation = False
         self.Defines = [ 'WIN32', '_WINDOWS' ]
+        self.IncludePaths = [ ]
         self.UpdateCommandLine()
 
     def InitRelease(self):
@@ -291,7 +292,10 @@ class VCCompileOptions:
             cmdline += [ "/GL" ]
 
         for define in self.Defines:
-            cmdline += [ '/D "' + define + '"' ]
+            cmdline += [ '/D', define ]
+
+        for include in self.IncludePaths:
+            cmdline += [ '/I', include ]
 
         self.CommandLine = cmdline
 
