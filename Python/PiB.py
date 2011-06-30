@@ -27,13 +27,11 @@
 #
 # TODO:
 #
-#   Compiler text not showing up in IDE!
 #   Look into cPickle
 #   Instead of using input/output FILES, use NODES.
 #   Cache explicit dependencies and mix with Windows USN Journal
 #   Are configurations enough? Are they too much?
 #   Conversion of command-line options to the command-line is a little error-prone
-#   Compile steps not outputting to VS window
 #   vcproj/sln clean?
 #   Does the code deal with #include "file.cpp"?
 #   Needs to be simpler! I'm sure I've missed some key opportunities in the

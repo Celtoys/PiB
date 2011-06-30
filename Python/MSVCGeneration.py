@@ -64,7 +64,7 @@ vcproj_config = """		<Configuration
 				BuildCommandLine="%BUILD%"
 				ReBuildCommandLine="%REBUILD%"
 				CleanCommandLine="%CLEAN%"
-				Output=""
+				Output="%OUTPUT%"
 				PreprocessorDefinitions=""
 				IncludeSearchPath=""
 				ForcedIncludes=""
@@ -161,7 +161,7 @@ def DoesProjectNeedUpdating(env, vcproj_path, files):
 
 
 # Need: input files, configurations and args to run for configurations
-def VCGenerateProjectFile(env, name, files):
+def VCGenerateProjectFile(env, name, files, output):
 
     # Generate file paths
     vcproj_path = name + ".vcproj"
@@ -205,6 +205,10 @@ def VCGenerateProjectFile(env, name, files):
         xml = xml.replace("%CLEAN%", pibcmd + "clean " + config.CmdLineArg)
         xml = xml.replace("%OUTPUTDIR%", os.path.relpath(config.OutputPath, vcproj_dir))
         xml = xml.replace("%INTERDIR%", os.path.relpath(config.IntermediatePath, vcproj_dir))
+        
+        (output_path, output_ext) = output.GetOutputExecutable(config)
+        xml = xml.replace("%OUTPUT%", os.path.relpath(output_path + output_ext, vcproj_dir))
+        
         print(xml, file=f)
 
     print("\t</Configurations>", file=f)

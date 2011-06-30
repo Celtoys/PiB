@@ -716,16 +716,23 @@ class VCLinkNode (BuildSystem.Node):
         path = os.path.join(env.CurrentConfig.OutputPath, self.Path)
         return path
 
-    def GetOutputFiles(self, env):
-
+    def GetOutputExecutable(self, config):
+        
         # Get the relocated path minus extension
         path = os.path.splitext(self.Path)[0]
-        path = os.path.join(env.CurrentConfig.OutputPath, path)
+        path = os.path.join(config.OutputPath, path)
+        
+        ext = ".exe"
+        if config.LinkOptions.DLL:
+            ext = ".dll"
+        
+        return (path, ext)
 
-        if env.CurrentConfig.LinkOptions.DLL:
-            files = [ path + ".dll" ]
-        else:
-            files = [ path + ".exe" ]
+    def GetOutputFiles(self, env):
+        
+        # Add the EXE/DLL
+        (path, ext) = self.GetOutputExecutable(env.CurrentConfig)
+        files = [ path + ext ]
 
         if env.CurrentConfig.LinkOptions.Debug:
             files += [ path + ".pdb" ]
@@ -734,7 +741,7 @@ class VCLinkNode (BuildSystem.Node):
             files += [ path + ".ilk" ]
 
         return files
-
+    
     def __repr__(self):
 
         return "LINK: " + self.Path
