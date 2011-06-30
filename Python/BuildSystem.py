@@ -164,13 +164,7 @@ class Environment:
         self.Configs = { }
         self.Configs["debug"] = Config("Debug", "debug", MSVCPlatform.VCBaseConfig.DEBUG)
         self.Configs["release"] = Config("Release", "release", MSVCPlatform.VCBaseConfig.RELEASE)
-
-        # Apply the config from the command-line
-        self.CurrentConfig = self.Configs["debug"]
-        for name, config in self.Configs.items():
-            if name in sys.argv:
-                self.CurrentConfig = config
-                break
+        self.ApplyCommandLineConfig()
 
         # Load existing file metadata from disk
         self.FileMap = { }
@@ -179,6 +173,16 @@ class Environment:
             with open("metadata.pib", "rb") as f:
                 self.FileMap = pickle.load(f)
                 self.FileMetadata = pickle.load(f)
+    
+    def ApplyCommandLineConfig(self):
+
+        # Debug by default, overridden by whatever keyword is found in the list of args
+        self.CurrentConfig = self.Configs["debug"]
+        for name, config in self.Configs.items():
+            if name in sys.argv:
+                self.CurrentConfig = config
+                break
+
 
     def AddToFileMap(self, filename):
 
