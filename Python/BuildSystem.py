@@ -318,16 +318,16 @@ class Environment:
         for file in output_files:
             Utils.RemoveFile(file)
     
-    def Build(self, build_graphs):
+    def Build(self, build_graph):
         
         # Clean outputs?
         if "clean" in sys.argv or "rebuild" in sys.argv:
             print("PiB Cleaning...")
-            [ self.ExecuteNodeClean(node) for node in build_graphs ]
+            self.ExecuteNodeClean(build_graph)
         
         # Build the graph?
         if "rebuild" in sys.argv or not "clean" in sys.argv:
             print("PiB Building...")
-            [ self.ExecuteNodeBuild(node) for node in build_graphs ]
+            self.ExecuteNodeBuild(build_graph)
             self.SaveFileMetadata()
             
