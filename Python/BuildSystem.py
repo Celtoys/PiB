@@ -207,9 +207,9 @@ class Environment:
 
         return MSVCPlatform.VCCompileNode(filename)
 
-    def Link(self, filename, dependencies):
+    def Link(self, filename, obj_files, lib_files = []):
 
-        return MSVCPlatform.VCLinkNode(filename, dependencies)
+        return MSVCPlatform.VCLinkNode(filename, obj_files, lib_files)
 
     def Lib(self, filename, dependencies):
 

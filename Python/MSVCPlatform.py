@@ -400,7 +400,8 @@ class VCLinkOptions:
     def UpdateCommandLine(self):
 
         cmdline = [
-            '/ERRORREPORT:NONE'     # Don't send any ICEs to Microsoft
+            '/ERRORREPORT:NONE',    # Don't send any ICEs to Microsoft
+            '/VERBOSE:LIB'          # Show libs searched for dependency evaluation
         ]
 
         if self.Debug:
@@ -539,8 +540,7 @@ class VCLibOptions:
 #
 class VCIncludeScanner:
 
-    IncludePrefix = "Note: including file:"
-    StripLength = len(IncludePrefix)
+    Prefix = "Note: including file:"
 
     def __init__(self, env):
 
@@ -557,8 +557,8 @@ class VCIncludeScanner:
             line = line[:-2]
 
         # Scan for included files and add to the list
-        if line.startswith(self.IncludePrefix):
-            path = line[self.StripLength:].lstrip()
+        if line.startswith(self.Prefix):
+            path = line[len(self.Prefix):].lstrip()
             self.Includes.append(self.Env.NewFile(path))
 
         else:
@@ -623,14 +623,65 @@ class VCCompileNode (BuildSystem.Node):
 
 
 #
+# This reads each line of output from cl.exe and decides whether to print it or not.
+# If the line reports what file is being included by the .c/.cpp file then it's not printed
+# and instead stored locally so that it can report all the files included.
+#
+class VCLibScanner:
+
+    Start = "Searching libraries"
+    End = "Finished searching libraries"
+    Prefix = "    Searching "
+
+    def __init__(self, env):
+
+        self.LibsAdded = { }
+        self.Libs = [ ]
+        self.Env = env
+        self.Scanning = False
+
+    def __call__(self, line):
+
+        if line == "":
+            return
+        
+        # Strip newline
+        if line.endswith("\r\n"):
+            line = line[:-2]
+        
+        if self.Scanning == False:
+            
+            # Either start scanning or report everything
+            if line == self.Start:
+                self.Scanning = True
+            else:
+                print(line)
+            return
+        
+        # End of scanning?
+        if line == self.End:
+            self.Scanning = False
+            return
+        
+        if line.startswith(self.Prefix):
+            lib = line[len(self.Prefix):-1]
+            if lib not in self.LibsAdded:
+                self.Libs += [ self.Env.NewFile(lib) ]
+                self.LibsAdded[lib] = True
+
+
+#
 # A node for linking an EXE or DLL given an output path and list of dependencies
 #
 class VCLinkNode (BuildSystem.Node):
 
-    def __init__(self, path, dependencies):
+    def __init__(self, path, obj_files, lib_files):
 
         self.Path = path
-        self.Dependencies = dependencies
+        
+        # Object files are explicit dependencies, lib files are implicit, scanned during output
+        self.Dependencies = obj_files
+        self.LibFiles = lib_files
 
     def Build(self, env):
 
@@ -641,11 +692,17 @@ class VCLinkNode (BuildSystem.Node):
         cmdline = [ "link.exe" ] + env.CurrentConfig.LinkOptions.CommandLine
         cmdline += [ '/OUT:' + output_files[0] ]
         cmdline.extend(dep.GetOutputFiles(env)[0] for dep in self.Dependencies)
+        cmdline.extend(dep.GetOutputFiles(env)[0] for dep in self.LibFiles)
         #print(cmdline)
 
-        # Run the link process
+        # Create the lib scanner and run the link process
+        scanner = VCLibScanner(env)
         process = Process.OpenPiped(cmdline, env.EnvironmentVariables)
-        Process.PollPipeOutput(process, lambda x: print(x))
+        Process.PollPipeOutput(process, scanner)
+        
+        # Record the implicit dependencies for this file
+        data = env.GetFileMetadata(self.GetInputFile(env))
+        data.SetImplicitDeps(env, scanner.Libs)
 
         return process.returncode == 0
 
