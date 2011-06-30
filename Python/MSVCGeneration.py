@@ -188,7 +188,7 @@ def VCGenerateProjectFile(env, name, files):
     f = open(vcproj_path, "w")
 
     print('<?xml version="1.0" encoding="Windows-1252"?>', file=f)
-    print("<!-- PiBDigest: m_pal71x5M9UuFYoznKtGg== -->", file=f)
+    print("<!-- PiBDigest: " + digest + " -->", file=f)
 
     # Generate the header
     header_xml = vcproj_header.replace("%NAME%", vcproj_name)
