@@ -43,8 +43,10 @@ def GetJDKPath():
     # Get a sorted list of available JDK version numbers
     key = OpenKey(winreg.HKEY_LOCAL_MACHINE, "SOFTWARE\JavaSoft\Java Development Kit")
     if key == None:
-        print("ERROR: Couldn't find the JDK registry key")
-        return None
+        key = OpenKey(winreg.HKEY_LOCAL_MACHINE, "SOFTWARE\Wow6432Node\JavaSoft\Java Development Kit")
+        if key == None:
+            print("ERROR: Couldn't find the JDK registry key")
+            return None
     names = sorted(GetSubKeyNames(key))
     
     # Open the key for the most up-to-date version
