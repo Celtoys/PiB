@@ -71,10 +71,10 @@ with open(pibfile) as f:
 
     # Inject the environment initialisation code
 prologue = """
-from MSVCPlatform import *
-from MSVCGeneration import *
 from BuildSystem import *
+from Environment import *
 from Utils import *
+from MSVCGeneration import *
 
 env = Environment.New()
 if env == None:
