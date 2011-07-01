@@ -30,6 +30,7 @@
 import os
 import sys
 import pickle
+import shutil
 import binascii
 import Utils
 import MSVCPlatform
@@ -119,6 +120,27 @@ class FileNode (Node):
 
     def GetOutputFiles(self, env):
         return [ env.GetFilename(self.CRC) ]
+
+
+class CopyNode (Node):
+
+    def __init__(self, output, source, dest):
+
+        self.Dependencies = [ output ]
+        self.Source = source
+        self.Destination = dest
+
+    def Build(self, env):
+
+        print("Copying from " + self.Source + " to " + self.Destination)
+        Utils.Makedirs(os.path.dirname(self.Destination))
+        shutil.copyfile(self.Source, self.Destination)
+
+    def GetInputFile(self, env):
+        return self.Source
+
+    def GetOutputFiles(self, env):
+        return [ self.Destination ]
 
 
 #
@@ -214,6 +236,12 @@ class Environment:
     def Lib(self, filename, dependencies):
 
         return MSVCPlatform.VCLibNode(filename, dependencies)
+
+    def CopyOutputFile(self, output, index, dest_path):
+
+        source = output.GetOutputFiles(self)[index]
+        dest = os.path.join(dest_path, os.path.basename(source))
+        return CopyNode(output, source, dest)
 
     def GetFilename(self, crc):
 

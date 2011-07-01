@@ -258,6 +258,7 @@ def VCGenerateProjectFile(env, name, files, output):
 def DoesSolutionNeedUpdating(env, sln_path, projects):
 
     # Hash all the inputs
+    # TODO: Output filename
     md5 = hashlib.md5()
     for name in projects:
         md5.update(bytes(name, "utf-8"))
