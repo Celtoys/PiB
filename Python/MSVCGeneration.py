@@ -205,10 +205,14 @@ def VCGenerateProjectFile(env, name, files, output):
         xml = xml.replace("%CLEAN%", pibcmd + "clean " + config.CmdLineArg)
         xml = xml.replace("%OUTPUTDIR%", os.path.relpath(config.OutputPath, vcproj_dir))
         xml = xml.replace("%INTERDIR%", os.path.relpath(config.IntermediatePath, vcproj_dir))
-        
-        (output_path, output_ext) = output.GetOutputExecutable(config)
-        xml = xml.replace("%OUTPUT%", os.path.relpath(output_path + output_ext, vcproj_dir))
-        
+
+        # Specify the output executable for debugging
+        if output != None:
+            (output_path, output_ext) = output.GetOutputExecutable(config)
+            xml = xml.replace("%OUTPUT%", os.path.relpath(output_path + output_ext, vcproj_dir))
+        else:
+            xml = xml.replace("%OUTPUT%", "")
+
         print(xml, file=f)
 
     print("\t</Configurations>", file=f)
@@ -250,14 +254,12 @@ def VCGenerateProjectFile(env, name, files, output):
     print("</VisualStudioProject>", file=f)
     f.close()
 
-    return vcproj_guid
-
 
 def DoesSolutionNeedUpdating(env, sln_path, projects):
 
     # Hash all the inputs
     md5 = hashlib.md5()
-    for name, guid in projects.items():
+    for name in projects:
         md5.update(bytes(name, "utf-8"))
 
     src_digest = md5.digest()
@@ -293,6 +295,18 @@ def DoesSolutionNeedUpdating(env, sln_path, projects):
         return src_digest
 
 
+def ReadProjectGUID(vcproj_path):
+    
+    with open(vcproj_path, "r") as f:
+        
+        for line in f.readlines():
+            
+            line = line.strip()
+            if line.startswith("ProjectGUID="):
+                guid = line.split("=")[1][1:-1]
+                return guid
+
+
 def VCGenerateSolutionFile(env, name, projects):
 
     sln_path = name + ".sln"
@@ -310,10 +324,12 @@ def VCGenerateSolutionFile(env, name, projects):
     print("# Visual Studio 2005", file=f)
 
     # Write the project summary
-    for name, guid in projects.items():
+    guids = { }
+    for name in projects:
         vcproj_path = os.path.normpath(name + ".vcproj")
         vcproj_name = os.path.basename(name)
-        print('Project("{' + str(uuid.uuid1()) + '}") = "' + vcproj_name + '", "' + vcproj_path + '", "{' + guid + '}"', file=f)
+        guids[name] = ReadProjectGUID(vcproj_path)
+        print('Project("{' + str(uuid.uuid1()).upper() + '}") = "' + vcproj_name + '", "' + vcproj_path + '", "' + guids[name] + '"', file=f)
         print("EndProject", file=f)
 
     print("Global", file=f)
@@ -327,10 +343,10 @@ def VCGenerateSolutionFile(env, name, projects):
     print("\tGlobalSection(ProjectConfigurationPlatforms) = postSolution", file=f)
 
     # Write how each solution configs to each project config
-    for name, guid in projects.items():
+    for name in projects:
         for config in env.Configs.values():
             config_name = config.Name + "|Win32"
-            prefix = "\t\t{" + str(guid).upper() + "}." + config_name
+            prefix = "\t\t" + guids[name] + "." + config_name
             print(prefix + ".ActiveCfg = " + config_name, file=f)
             print(prefix + ".Build.0 = " + config_name, file=f)
 

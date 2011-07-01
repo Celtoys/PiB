@@ -37,5 +37,5 @@ exe = env.Link("Out.exe", obj_files)
 env.Build(exe)
 
 # Generate projects
-a = VCGenerateProjectFile(env, "Code/TestProject", cpp_files + h_files, exe)
-VCGenerateSolutionFile(env, "TestProject", { "Code/TestProject" : a })
+VCGenerateProjectFile(env, "Code/TestProject", cpp_files + h_files, exe)
+VCGenerateSolutionFile(env, "TestProject", [ "Code/TestProject" ])
