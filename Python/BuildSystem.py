@@ -1,7 +1,6 @@
 
 #
-# BuildSystem.py: The core dependency graph build/evaluation code and metadata
-# management.
+# BuildSystem.py: Some basic build nodes and file metadata.
 #
 # --- MIT Open Source License --------------------------------------------------
 # PiB - Python Build System
