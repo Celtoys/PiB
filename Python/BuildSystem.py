@@ -129,9 +129,15 @@ class CopyNode (Node):
 
     def Build(self, env):
 
+        if not os.path.exists(self.Source):
+            print("Skipping copy of " + self.Source + " because it doesn't exist")
+            return False
+
         print("Copying from " + self.Source + " to " + self.Destination)
         Utils.Makedirs(os.path.dirname(self.Destination))
         shutil.copyfile(self.Source, self.Destination)
+
+        return True
 
     def GetInputFile(self, env):
         return self.Source

@@ -75,6 +75,11 @@ def GetJDKBinPath():
     return os.path.join(GetJDKPath(), "bin")
 
 
+def GetJDKIncludePath():
+
+    return os.path.join(GetJDKPath(), "include")
+
+
 def JavaCLineFilter(line):
     
     if line == "":

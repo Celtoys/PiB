@@ -209,6 +209,13 @@ VCDebuggingInfo = Utils.enum(
     PDBEDITANDCONTINUE = '/ZI'
 )
 
+VCCRTType = Utils.enum(
+    MT_DLL = '/MD',
+    MT_DEBUG_DLL = '/MDd',
+    MT = '/MT',
+    MT_DEBUG = '/MTd'
+)
+
 
 class VCCompileOptions:
 
@@ -234,7 +241,9 @@ class VCCompileOptions:
         self.RuntimeChecks = True
         self.Optimisations = VCOptimisations.DISABLE
         self.WholeProgramOptimisation = False
+        self.CRTType = VCCRTType.MT_DEBUG
         self.Defines = [ 'WIN32', '_WINDOWS' ]
+        self.DisabledWarnings = [ ]
         self.IncludePaths = [ ]
         self.UpdateCommandLine()
 
@@ -246,6 +255,7 @@ class VCCompileOptions:
         self.RuntimeChecks = False
         self.Optimisations = VCOptimisations.SPEED
         self.WholeProgramOptimisation = True
+        self.CRTType = VCCRTType.MT
         self.Defines.extend( [ 'NDEBUG' ])
         self.UpdateCommandLine()
 
@@ -266,9 +276,13 @@ class VCCompileOptions:
             cmdline += [ '/nologo' ]
 
         cmdline += [ "/W" + str(self.WarningLevel) ]
+        cmdline += [ self.CRTType ]
 
         if self.WarningsAsErrors:
             cmdline += [ "/WX" ]
+
+        for warning in self.DisabledWarnings:
+            cmdline += [ "/wd" + str(warning) ]
 
         if self.Architecture != None:
             cmdline += [ self.Architecture ]
