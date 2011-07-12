@@ -69,7 +69,7 @@ code = None
 with open(pibfile) as f:
     code = f.read()
 
-    # Inject the environment initialisation code
+# Inject the environment initialisation code
 prologue = """
 from BuildSystem import *
 from Environment import *
