@@ -245,6 +245,8 @@ class VCCompileOptions:
         self.Defines = [ 'WIN32', '_WINDOWS' ]
         self.DisabledWarnings = [ ]
         self.IncludePaths = [ ]
+        self.ReportClassLayout = False
+        self.ReportSingleClassLayout = [ ]
         self.UpdateCommandLine()
 
     def InitRelease(self):
@@ -310,6 +312,12 @@ class VCCompileOptions:
 
         for include in self.IncludePaths:
             cmdline += [ '/I', include ]
+        
+        if self.ReportClassLayout:
+            cmdline += [ '/d1reportAllClassLayout' ]
+        
+        for cls in self.ReportSingleClassLayout:
+            cmdline += [ '/d1reportSingleClassLayout' + cls ]
 
         self.CommandLine = cmdline
 
