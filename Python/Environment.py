@@ -83,6 +83,13 @@ class Environment:
         # Force node builds irrespective of dependencies?
         self.ForceBuild = "-force" in sys.argv
 
+        # Parse any build filters in the command-line
+        self.InputBuildFilter = None
+        if "-input_filter" in sys.argv:
+            i = sys.argv.index("-input_filter") + 1
+            if i < len(sys.argv):
+                self.InputBuildFilter = sys.argv[i]
+
         # Set up some default configurations
         self.Configs = { }
         self.Configs["debug"] = Config("Debug", "debug", MSVCPlatform.VCBaseConfig.DEBUG)
@@ -224,6 +231,11 @@ class Environment:
                 if input_filename != output_file and not os.path.exists(output_file):
                     requires_build = True
                     break
+
+        # At the last minute, cancel any builds if they're excluded by the input filter
+        if requires_build and self.InputBuildFilter != None:
+            if self.InputBuildFilter not in input_filename:
+                requires_build = False
 
         # Execute any build steps
         if requires_build and success:
