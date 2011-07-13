@@ -80,6 +80,9 @@ class Environment:
         # Construc the environment variables
         self.EnvironmentVariables = envvars
 
+        # Force node builds irrespective of dependencies?
+        self.ForceBuild = "-force" in sys.argv
+
         # Set up some default configurations
         self.Configs = { }
         self.Configs["debug"] = Config("Debug", "debug", MSVCPlatform.VCBaseConfig.DEBUG)
@@ -192,7 +195,7 @@ class Environment:
     def ExecuteNodeBuild(self, node):
 
         # Have any of the explicit dependencies changed?
-        requires_build = False
+        requires_build = self.ForceBuild
         success = True
         for dep in node.Dependencies:
             (a, b) = self.ExecuteNodeBuild(dep)
