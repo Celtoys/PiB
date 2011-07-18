@@ -1,7 +1,5 @@
 
 #
-# Utils.py: Some shared utility functions.
-#
 # --- MIT Open Source License --------------------------------------------------
 # PiB - Python Build System
 # Copyright (C) 2011 by Don Williamson
@@ -25,10 +23,13 @@
 # SOFTWARE.
 # ------------------------------------------------------------------------------
 #
+# Utils.py: Some shared utility functions.
+#
 
 import os
-import fnmatch
+import sys
 import errno
+import fnmatch
 
 
 #
@@ -106,3 +107,18 @@ def Glob(path, pattern):
         for filename in fnmatch.filter(filenames, pattern):
             matches.append(os.path.join(root, filename))
     return matches
+
+
+#
+# Searches the command-line for the given argument, returning the value passed
+# after that argument if it exists. Can return a specified default value if
+# the argument wasn't found.
+#
+def GetSysArgvProperty(name, default=None):
+
+    if name in sys.argv:
+        i = sys.argv.index(name) + 1
+        if i < len(sys.argv):
+            return sys.argv[i]
+
+    return default

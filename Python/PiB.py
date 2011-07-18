@@ -1,7 +1,5 @@
 
 #
-# pib.py: Entry point for the build system.
-#
 # --- MIT Open Source License --------------------------------------------------
 # PiB - Python Build System
 # Copyright (C) 2011 by Don Williamson
@@ -24,6 +22,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 # ------------------------------------------------------------------------------
+#
+# PiB.py: Entry point for the build system.
 #
 # TODO:
 #
@@ -52,14 +52,11 @@
 
 import os
 import sys
+import Utils
 
 
 # See if the caller wants to use a custom build script name/location
-pibfile = "pibfile"
-if "-pf" in sys.argv:
-    i = sys.argv.index("-pf") + 1
-    if i < len(sys.argv):
-        pibfile = sys.argv[i]
+pibfile = Utils.GetSysArgvProperty("-pf", "pibfile")
 
 # Load the build script file
 if not os.path.exists(pibfile):

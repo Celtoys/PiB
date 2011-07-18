@@ -1,8 +1,5 @@
 
 #
-# MSVCPlatform.py: Command-line parameter abstraction and build nodes for
-# Microsoft Visual C++ 2005.
-#
 # --- MIT Open Source License --------------------------------------------------
 # PiB - Python Build System
 # Copyright (C) 2011 by Don Williamson
@@ -25,6 +22,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 # ------------------------------------------------------------------------------
+#
+# MSVCPlatform.py: Command-line parameter abstraction and build nodes for
+# Microsoft Visual C++ 2005.
 #
 # C/C++ Building Reference (2005):
 # http://msdn.microsoft.com/en-us/library/91621w01(v=VS.80).aspx

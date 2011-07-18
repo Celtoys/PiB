@@ -1,8 +1,5 @@
 
 #
-# Environment.py: The core dependency graph build/evaluation code and anything
-# else that doesn't fit elsewhere.
-#
 # --- MIT Open Source License --------------------------------------------------
 # PiB - Python Build System
 # Copyright (C) 2011 by Don Williamson
@@ -25,6 +22,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 # ------------------------------------------------------------------------------
+#
+# Environment.py: The core dependency graph build/evaluation code and anything
+# else that doesn't fit elsewhere.
 #
 
 import os
@@ -84,11 +84,8 @@ class Environment:
         self.ForceBuild = "-force" in sys.argv
 
         # Parse any build filters in the command-line
-        self.InputBuildFilter = None
-        if "-input_filter" in sys.argv:
-            i = sys.argv.index("-input_filter") + 1
-            if i < len(sys.argv):
-                self.InputBuildFilter = sys.argv[i]
+        self.BuildTarget = Utils.GetSysArgvProperty("-target", None)
+        self.BuildInputFilter = Utils.GetSysArgvProperty("-input_filter", None)
 
         # Set up some default configurations
         self.Configs = { }
@@ -233,8 +230,8 @@ class Environment:
                     break
 
         # At the last minute, cancel any builds if they're excluded by the input filter
-        if requires_build and self.InputBuildFilter != None:
-            if self.InputBuildFilter not in input_filename:
+        if requires_build and self.BuildInputFilter != None:
+            if self.BuildInputFilter not in input_filename.lower():
                 requires_build = False
 
         # Execute any build steps
@@ -263,16 +260,26 @@ class Environment:
         for file in output_files:
             Utils.RemoveFile(file)
     
-    def Build(self, build_graph):
-        
+    def Build(self, build_graph, target=None):
+
+        # Exclude targets not mentioned on the command-line, if any
+        if target != None and self.BuildTarget != None:
+            if target != self.BuildTarget:
+                return
+
+        # Determine a printable target name
+        target_name = ""
+        if target != None:
+            target_name = " target '" + target + "'"
+
         # Clean outputs?
         if "clean" in sys.argv or "rebuild" in sys.argv:
-            print("PiB Cleaning...")
+            print("PiB Cleaning" + target_name + "...")
             self.ExecuteNodeClean(build_graph)
-        
+
         # Build the graph?
         if "rebuild" in sys.argv or not "clean" in sys.argv:
-            print("PiB Building...")
+            print("PiB Building" + target_name + "...")
             self.ExecuteNodeBuild(build_graph)
             self.SaveFileMetadata()
 

@@ -1,7 +1,5 @@
 
 #
-# BuildSystem.py: Some basic build nodes and file metadata.
-#
 # --- MIT Open Source License --------------------------------------------------
 # PiB - Python Build System
 # Copyright (C) 2011 by Don Williamson
@@ -24,6 +22,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 # ------------------------------------------------------------------------------
+#
+# BuildSystem.py: Some basic build nodes and file metadata.
 #
 
 import os
@@ -118,6 +118,10 @@ class FileNode (Node):
         return [ env.GetFilename(self.CRC) ]
 
 
+#
+# A file copying node that can be placed anywhere in the dependency chain, always
+# returning True on Build
+#
 class CopyNode (Node):
 
     def __init__(self, output, source, dest):

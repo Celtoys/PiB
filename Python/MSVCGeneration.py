@@ -1,8 +1,5 @@
 
 #
-# MSVCGeneration.py: Automatic, dependency-based generation of Visual Studio C++
-# 2005 Projects and Solutions
-#
 # --- MIT Open Source License --------------------------------------------------
 # PiB - Python Build System
 # Copyright (C) 2011 by Don Williamson
@@ -25,6 +22,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 # ------------------------------------------------------------------------------
+#
+# MSVCGeneration.py: Automatic, dependency-based generation of Visual Studio C++
+# 2005 Projects and Solutions
 #
 
 import os
@@ -161,7 +161,7 @@ def DoesProjectNeedUpdating(env, vcproj_path, files):
 
 
 # Need: input files, configurations and args to run for configurations
-def VCGenerateProjectFile(env, name, files, output):
+def VCGenerateProjectFile(env, name, files, output, target=None):
 
     # Generate file paths
     vcproj_path = name + ".vcproj"
@@ -185,6 +185,11 @@ def VCGenerateProjectFile(env, name, files, output):
     if pibfile_dir != "":
         pibcmd = "cd " + pibfile_dir + " &amp; " + pibcmd       # '&' in XML-speak
 
+    # Construct target specification command-line option
+    target_opt = ""
+    if target != None:
+        target_opt = " -target " + target
+
     f = open(vcproj_path, "w")
 
     print('<?xml version="1.0" encoding="Windows-1252"?>', file=f)
@@ -200,9 +205,9 @@ def VCGenerateProjectFile(env, name, files, output):
     for name, config in env.Configs.items():
 
         xml = vcproj_config.replace("%CONFIG%", config.Name)
-        xml = xml.replace("%BUILD%", pibcmd + config.CmdLineArg)
-        xml = xml.replace("%REBUILD%", pibcmd + "rebuild " + config.CmdLineArg)
-        xml = xml.replace("%CLEAN%", pibcmd + "clean " + config.CmdLineArg)
+        xml = xml.replace("%BUILD%", pibcmd + config.CmdLineArg + target_opt)
+        xml = xml.replace("%REBUILD%", pibcmd + "rebuild " + config.CmdLineArg + target_opt)
+        xml = xml.replace("%CLEAN%", pibcmd + "clean " + config.CmdLineArg + target_opt)
         xml = xml.replace("%OUTPUTDIR%", os.path.relpath(config.OutputPath, vcproj_dir))
         xml = xml.replace("%INTERDIR%", os.path.relpath(config.IntermediatePath, vcproj_dir))
 
@@ -311,7 +316,7 @@ def ReadProjectGUID(vcproj_path):
 def VCGenerateSolutionFile(env, name, projects):
 
     sln_path = name + ".sln"
-    
+
     # Does the sln file need to be generated?
     digest = DoesSolutionNeedUpdating(env, sln_path, projects)
     if digest == None:
@@ -326,11 +331,20 @@ def VCGenerateSolutionFile(env, name, projects):
 
     # Write the project summary
     guids = { }
+    prev_guid = None
     for name in projects:
         vcproj_path = os.path.normpath(name + ".vcproj")
         vcproj_name = os.path.basename(name)
         guids[name] = ReadProjectGUID(vcproj_path)
         print('Project("{' + str(uuid.uuid1()).upper() + '}") = "' + vcproj_name + '", "' + vcproj_path + '", "' + guids[name] + '"', file=f)
+
+        # Ensure the Solution build order matches the order in which projects were passed
+        if prev_guid != None:
+            print("\tProjectSection(ProjectDependencies) = postProject", file=f)
+            print("\t\t" + prev_guid + " = " + prev_guid, file=f)
+            print("\tEndProjectSection", file=f)
+
+        prev_guid = guids[name]
         print("EndProject", file=f)
 
     print("Global", file=f)
