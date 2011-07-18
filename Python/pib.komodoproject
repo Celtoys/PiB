@@ -13,6 +13,8 @@
 </file>
 <file id="8a437f23-986a-4762-8fa9-5f8f347f4c98" idref="05a2bbf0-117c-43f2-ad1f-2707e0a1928b" name="BuildSystem.py" url="BuildSystem.py">
 </file>
+<file id="a65e4476-e814-4731-bf17-900e457e41c8" idref="05a2bbf0-117c-43f2-ad1f-2707e0a1928b" name="ClangReflect.py" url="ClangReflect.py">
+</file>
 <file id="b91d618a-e8ad-4f97-8e0d-d25dfbfd9be0" idref="05a2bbf0-117c-43f2-ad1f-2707e0a1928b" name="JDKPlatform.py" url="JDKPlatform.py">
 </file>
 <file id="c123a4ec-0636-4faa-beb6-34330f12d101" idref="05a2bbf0-117c-43f2-ad1f-2707e0a1928b" name="Environment.py" url="Environment.py">
