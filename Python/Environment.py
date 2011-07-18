@@ -260,7 +260,11 @@ class Environment:
         for file in output_files:
             Utils.RemoveFile(file)
     
-    def Build(self, build_graph, target=None):
+    def Build(self, build_graphs, target=None):
+
+        # Promote to a list if necessary
+        if type(build_graphs) != type([]):
+            build_graphs = [ build_graphs ]
 
         # Exclude targets not mentioned on the command-line, if any
         if target != None and self.BuildTarget != None:
@@ -275,12 +279,12 @@ class Environment:
         # Clean outputs?
         if "clean" in sys.argv or "rebuild" in sys.argv:
             print("PiB Cleaning" + target_name + "...")
-            self.ExecuteNodeClean(build_graph)
+            [ self.ExecuteNodeClean(bg) for bg in build_graphs ]
 
         # Build the graph?
         if "rebuild" in sys.argv or not "clean" in sys.argv:
             print("PiB Building" + target_name + "...")
-            self.ExecuteNodeBuild(build_graph)
+            [ self.ExecuteNodeBuild(bg) for bg in build_graphs ]
             self.SaveFileMetadata()
 
 
