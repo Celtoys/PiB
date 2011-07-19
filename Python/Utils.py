@@ -122,3 +122,35 @@ def GetSysArgvProperty(name, default=None):
             return sys.argv[i]
 
     return default
+
+
+#
+# This reads each line of output from a compiler and decides whether to print it or not.
+# If the line reports what file is being included by the .c/.cpp file then it's not printed
+# and instead stored locally so that it can report all the files included.
+#
+# NOTE: This is the only util in this file to depend on Environment.
+#
+class IncludeScanner:
+
+    def __init__(self, env, prefix):
+
+        self.Includes = [ ]
+        self.Env = env
+        self.Prefix = prefix
+
+    def __call__(self, line):
+
+        if line == "":
+            return
+
+        # Strip newline
+        line = line.strip("\r\n")
+
+        # Scan for included files and add to the list
+        if line.startswith(self.Prefix):
+            path = line[len(self.Prefix):].lstrip()
+            self.Includes.append(self.Env.NewFile(path))
+
+        else:
+            print(line)

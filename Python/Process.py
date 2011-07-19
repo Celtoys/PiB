@@ -51,7 +51,7 @@ def OpenPiped(args, env = None):
     return subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=env)
 
 
-def WaitForPipeOutput(process):
+def WaitForPipeOutput(process, line_handler=None):
 
     # Note that the output from stdout is a bytearray and Python 3.0 strings are now Unicode
     # Need to "decode" the byte array: http://stackoverflow.com/questions/606191/convert-byte-array-to-python-string
@@ -62,10 +62,32 @@ def WaitForPipeOutput(process):
     # process.wait()
     # output = process.communicate()[0]
 
-    output = process.stdout.read()
-    return bytearray(output).decode()
+    if line_handler != None:
+
+        # Use a line handler if specified
+        output = process.stdout.readlines()
+        for line in output:
+            line_handler(bytearray(line).decode())
+
+        # Force commit of the returncode parameter in process
+        process.poll()
+
+    else:
+
+        output = process.stdout.read()
+
+        # Force commit of the returncode parameter in process
+        process.poll()
+
+        return bytearray(output).decode()
 
 
+#
+# TODO: This function has SEVERE problems capturing output - sometimes it
+# early-aborts before receiving output, sometimes it doesn't. The problem is
+# time-based and likely to be a threading issue. NEED TO WRITE A CUSTOM
+# VERSION TO HANDLE LONG PERIODS OF OUTPUT!
+#
 def PollPipeOutput(process, line_handler):
 
     # Loop while the process is running

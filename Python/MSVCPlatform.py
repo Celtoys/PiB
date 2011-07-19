@@ -565,38 +565,6 @@ class VCLibOptions:
 
 
 #
-# This reads each line of output from cl.exe and decides whether to print it or not.
-# If the line reports what file is being included by the .c/.cpp file then it's not printed
-# and instead stored locally so that it can report all the files included.
-#
-class VCIncludeScanner:
-
-    Prefix = "Note: including file:"
-
-    def __init__(self, env):
-
-        self.Includes = [ ]
-        self.Env = env
-
-    def __call__(self, line):
-
-        if line == "":
-            return
-
-        # Strip newline
-        if line.endswith("\r\n"):
-            line = line[:-2]
-
-        # Scan for included files and add to the list
-        if line.startswith(self.Prefix):
-            path = line[len(self.Prefix):].lstrip()
-            self.Includes.append(self.Env.NewFile(path))
-
-        else:
-            print(line)
-
-
-#
 # A node for compiling a single C/C++ file to a .obj file
 #
 class VCCompileNode (BuildSystem.Node):
@@ -618,7 +586,7 @@ class VCCompileNode (BuildSystem.Node):
         #print(cmdline)
 
         # Create the include scanner and launch the compiler
-        scanner = VCIncludeScanner(env)
+        scanner = Utils.IncludeScanner(env, "Note: including file:")
         process = Process.OpenPiped(cmdline, env.EnvironmentVariables)
         Process.PollPipeOutput(process, scanner)
 
@@ -641,10 +609,14 @@ class VCCompileNode (BuildSystem.Node):
         files = [ path + ".obj" ]
 
         if env.CurrentConfig.CPPOptions.DebuggingInfo != None:
-            files += [ os.path.join(env.CurrentConfig.OutputPath, "vc80.pdb") ]       # TODO: This doesn't vary between input files
 
-        if env.CurrentConfig.CPPOptions.DebuggingInfo == VCDebuggingInfo.PDBEDITANDCONTINUE:
-            files += [ os.path.join(env.CurrentConfig.OutputPath, "vc80.idb") ]
+            # The best we can do here is ensure that the obj\src directory for
+            # a group of files shares the same pdb/idb
+            path = os.path.dirname(path)
+            files += [ os.path.join(path, "vc80.pdb") ]
+
+            if env.CurrentConfig.CPPOptions.DebuggingInfo == VCDebuggingInfo.PDBEDITANDCONTINUE:
+                files += [ os.path.join(path, "vc80.idb") ]
 
         return files
 
@@ -675,25 +647,24 @@ class VCLibScanner:
 
         if line == "":
             return
-        
+
         # Strip newline
-        if line.endswith("\r\n"):
-            line = line[:-2]
-        
+        line = line.strip("\r\n")
+
         if self.Scanning == False:
-            
+
             # Either start scanning or report everything
             if line == self.Start:
                 self.Scanning = True
             else:
                 print(line)
             return
-        
+
         # End of scanning?
         if line == self.End:
             self.Scanning = False
             return
-        
+
         if line.startswith(self.Prefix):
             lib = line[len(self.Prefix):-1]
             if lib not in self.LibsAdded:
@@ -730,7 +701,7 @@ class VCLinkNode (BuildSystem.Node):
         scanner = VCLibScanner(env)
         process = Process.OpenPiped(cmdline, env.EnvironmentVariables)
         Process.PollPipeOutput(process, scanner)
-        
+
         # Record the implicit dependencies for this file
         data = env.GetFileMetadata(self.GetInputFile(env))
         data.SetImplicitDeps(env, scanner.Libs)
@@ -743,19 +714,19 @@ class VCLinkNode (BuildSystem.Node):
         return path
 
     def GetOutputExecutable(self, config):
-        
+
         # Get the relocated path minus extension
         path = os.path.splitext(self.Path)[0]
         path = os.path.join(config.OutputPath, path)
-        
+
         ext = ".exe"
         if config.LinkOptions.DLL:
             ext = ".dll"
-        
+
         return (path, ext)
 
     def GetOutputFiles(self, env):
-        
+
         # Add the EXE/DLL
         (path, ext) = self.GetOutputExecutable(env.CurrentConfig)
         files = [ path + ext ]

@@ -1,5 +1,6 @@
 
 import os
+import Utils
 import Process
 import BuildSystem
 
@@ -21,14 +22,14 @@ class CppScanNode (BuildSystem.Node):
         # Construct the command-line
         # TODO: Relocate
         cmdline = [ "bin/Debug/crscan.exe" ]
-        cmdline += [ input_file ]
+        cmdline += [ input_file, "-output_headers" ]
         cmdline += [ "-output", output_file ]
         #print(cmdline)
 
         # Launch the scanner and wait for it to finish
+        output = Utils.IncludeScanner(env, "Included:")
         process = Process.OpenPiped(cmdline)
-        Process.PollPipeOutput(process, lambda x: print(x.strip("\r\n")))
-        #Process.PollPipeOutput(process, lambda x: x)
+        Process.WaitForPipeOutput(process, output)
 
         return process.returncode == 0
     
