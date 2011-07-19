@@ -15,7 +15,7 @@ class CppScanNode (BuildSystem.Node):
     def Build(self, env):
 
         input_file = self.GetInputFile(env)
-        output_file = self.GetOutputFiles(env)[0]
+        output_files = self.GetOutputFiles(env)
 
         print("crscan: " + os.path.basename(input_file))
 
@@ -23,7 +23,9 @@ class CppScanNode (BuildSystem.Node):
         # TODO: Relocate
         cmdline = [ "bin/Debug/crscan.exe" ]
         cmdline += [ input_file, "-output_headers" ]
-        cmdline += [ "-output", output_file ]
+        cmdline += [ "-output", output_files[0] ]
+        cmdline += [ "-ast_log", output_files[1] ]
+        cmdline += [ "-spec_log", output_files[2] ]
         #print(cmdline)
 
         # Launch the scanner and wait for it to finish
@@ -41,7 +43,7 @@ class CppScanNode (BuildSystem.Node):
 
         path = os.path.splitext(self.GetInputFile(env))[0]
         path = os.path.join(env.CurrentConfig.IntermediatePath, path)
-        return [ path + ".csv" ]
+        return [ path + ".csv", path + "_astlog.txt", path + "_speclog.txt" ]
 
     def GetTempOutputFiles(self, env):
 
