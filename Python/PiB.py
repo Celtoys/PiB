@@ -66,7 +66,7 @@ code = None
 with open(pibfile) as f:
     code = f.read()
 
-# Inject the environment initialisation code
+# Inject the environment initialisation/shutdown code
 prologue = """
 from BuildSystem import *
 from Environment import *
@@ -77,6 +77,9 @@ env = Environment.New()
 if env == None:
     sys.exit(1)
 """
-code = prologue + code
+epilogue = """
+env.SaveFileMetadata()
+"""
+code = prologue + code + epilogue
 
-exec(prologue + code)
+exec(code)

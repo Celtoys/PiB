@@ -713,7 +713,7 @@ class VCLinkNode (BuildSystem.Node):
         path = os.path.join(env.CurrentConfig.OutputPath, self.Path)
         return path
 
-    def GetOutputExecutable(self, config):
+    def GetPrimaryOutput(self, config):
 
         # Get the relocated path minus extension
         path = os.path.splitext(self.Path)[0]
@@ -728,7 +728,7 @@ class VCLinkNode (BuildSystem.Node):
     def GetOutputFiles(self, env):
 
         # Add the EXE/DLL
-        (path, ext) = self.GetOutputExecutable(env.CurrentConfig)
+        (path, ext) = self.GetPrimaryOutput(env.CurrentConfig)
         files = [ path + ext ]
 
         if env.CurrentConfig.LinkOptions.Debug:
@@ -763,7 +763,7 @@ class VCLibNode (BuildSystem.Node):
         #print(cmdline)
 
         # Run the librarian process
-        process = Process.OpenPiped(cmdline, env.EnvironmentVariable)
+        process = Process.OpenPiped(cmdline, env.EnvironmentVariables)
         Process.PollPipeOutput(process, lambda x: print(x))
 
         return process.returncode == 0
@@ -773,10 +773,17 @@ class VCLibNode (BuildSystem.Node):
         path = os.path.join(env.CurrentConfig.OutputPath, self.Path)
         return path
 
+    def GetPrimaryOutput(self, config):
+
+        # Get the relocated path minus extension
+        path = os.path.splitext(self.Path)[0]
+        path = os.path.join(config.OutputPath, path)
+        return (path, ".lib")
+
     def GetOutputFiles(self, env):
 
-        path = os.path.join(env.CurrentConfig.OutputPath, self.Path)
-        return [ path ]
+        (path, ext) = self.GetPrimaryOutput(env.CurrentConfig)
+        return [ path + ext ]
 
 
 def __RunTests():

@@ -285,7 +285,6 @@ class Environment:
         if "rebuild" in sys.argv or not "clean" in sys.argv:
             print("PiB Building" + target_name + "...")
             [ self.ExecuteNodeBuild(bg) for bg in build_graphs ]
-            self.SaveFileMetadata()
 
 
 if __name__ == '__main__':

@@ -128,7 +128,7 @@ def DoesProjectNeedUpdating(env, vcproj_path, files):
     md5 = hashlib.md5()
     for file in files:
         md5.update(bytes(file, "utf-8"))
-
+    
     src_digest = md5.digest()
     src_digest = base64.urlsafe_b64encode(src_digest)
     src_digest = bytes(src_digest).decode()
@@ -168,6 +168,13 @@ def VCGenerateProjectFile(env, name, files, output, target=None):
     vcproj_name = os.path.basename(name)
     vcproj_dir = os.path.dirname(vcproj_path)
     vcproj_guid = str(uuid.uuid1()).upper()
+
+    # Remove the file if requested
+    if "-remove_vcfiles" in sys.argv:
+        if os.path.exists(vcproj_path):
+            print("Deleting " + vcproj_path)
+            os.remove(vcproj_path)
+        return
 
     # Does the vcproj need to be regenerated?
     digest = DoesProjectNeedUpdating(env, vcproj_path, files)
@@ -213,7 +220,7 @@ def VCGenerateProjectFile(env, name, files, output, target=None):
 
         # Specify the output executable for debugging
         if output != None:
-            (output_path, output_ext) = output.GetOutputExecutable(config)
+            (output_path, output_ext) = output.GetPrimaryOutput(config)
             xml = xml.replace("%OUTPUT%", os.path.relpath(output_path + output_ext, vcproj_dir))
         else:
             xml = xml.replace("%OUTPUT%", "")
@@ -316,6 +323,13 @@ def ReadProjectGUID(vcproj_path):
 def VCGenerateSolutionFile(env, name, projects):
 
     sln_path = name + ".sln"
+
+    # Remove the file if requested
+    if "-remove_vcfiles" in sys.argv:
+        if os.path.exists(sln_path):
+            print("Deleting " + sln_path)
+            os.remove(sln_path)
+        return
 
     # Does the sln file need to be generated?
     digest = DoesSolutionNeedUpdating(env, sln_path, projects)
