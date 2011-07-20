@@ -161,7 +161,7 @@ def DoesProjectNeedUpdating(env, vcproj_path, files):
 
 
 # Need: input files, configurations and args to run for configurations
-def VCGenerateProjectFile(env, name, files, output, target=None):
+def VCGenerateProjectFile(env, name, files, output, target=None, replacements = [ ]):
 
     # Generate file paths
     vcproj_path = name + ".vcproj"
@@ -238,9 +238,15 @@ def VCGenerateProjectFile(env, name, files, output, target=None):
         # We need the path relative to the project file
         filename = os.path.relpath(file, vcproj_dir)
         filename = os.path.normpath(filename)
-        file_dir = os.path.dirname(filename)
+        
+        # Separate the filename as seen in Visual Studio from the physical filename on disk
+        # Perform any text replacements requested by the caller
+        folder_filename = filename
+        for r in replacements:
+            folder_filename = folder_filename.replace(r[0], r[1])
 
         # Split the path into its component parts
+        file_dir = os.path.dirname(folder_filename)
         dir_parts = []
         if file_dir != "":
             dir_parts = file_dir.split(os.sep)
