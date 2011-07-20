@@ -5,6 +5,46 @@ import Process
 import BuildSystem
 
 
+
+class MergeNode (BuildSystem.Node):
+    
+    def __init__(self, path, db_files):
+
+        self.Path = path
+        self.Dependencies = db_files
+
+    def Build(self, env):
+
+        output_file = self.GetOutputFiles(env)[0]
+        print("crmerge: " + os.path.basename(output_file))
+
+        # Construct the command-line
+        # TODO: Relocate
+        cmdline = [ "bin/Debug/crmerge.exe" ]
+        cmdline += [ output_file ]
+        cmdline += [ file.GetOutputFiles(env)[0] for file in self.Dependencies ]
+        print(cmdline)
+        
+        # Launch the merger and wait for it to finish
+        process = Process.OpenPiped(cmdline)
+        output = Process.WaitForPipeOutput(process)
+        print(output)
+        
+    def GetInputFile(self, env):
+
+        path = os.path.join(env.CurrentConfig.IntermediatePath, self.Path)
+        return path
+
+    def GetOutputFiles(self, env):
+
+        path = os.path.join(env.CurrentConfig.IntermediatePath, self.Path)
+        return [ path ]
+
+    def GetTempOutputFiles(self, env):
+
+        return self.GetOutputFiles(env)
+
+
 class CppScanNode (BuildSystem.Node):
 
     def __init__(self, cpp_output):
@@ -16,7 +56,6 @@ class CppScanNode (BuildSystem.Node):
 
         input_file = self.GetInputFile(env)
         output_files = self.GetOutputFiles(env)
-
         print("crscan: " + os.path.basename(input_file))
 
         # Construct the command-line
@@ -48,3 +87,10 @@ class CppScanNode (BuildSystem.Node):
     def GetTempOutputFiles(self, env):
 
         return self.GetOutputFiles(env)
+
+
+def CppScan(cpp_output):
+    return CppScanNode(cpp_output)
+
+def Merge(path, db_files):
+    return MergeNode(path, db_files)
