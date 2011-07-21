@@ -143,17 +143,18 @@ def DoesProjectNeedUpdating(env, vcproj_path, files):
 
     with open(vcproj_path, "r") as f:
 
-        # Find the line with the metadata
-        line = f.readline()
-        line = f.readline()
+        # Search the file for the previous digest
+        dst_digest = None
+        lines = f.readlines()
+        for i in range(len(lines)):
+            if 'Name="PiBDigest"' in lines[i] and i + 1 < len(lines):
+                dst_digest = lines[i + 1].split('"')[1]
 
-        # Regeneration required if there's no comparison key in the vcproj
-        start = "<!-- PiBDigest: "
-        if not line.startswith(start):
+        # Regeneration required if it's not there
+        if dst_digest == None:
             return src_digest
 
         # If they're equal, no need to return a new digest
-        dst_digest = line[len(start):-5]
         if src_digest == dst_digest:
             return None
 
@@ -200,7 +201,6 @@ def VCGenerateProjectFile(env, name, files, output, target=None, replacements = 
     f = open(vcproj_path, "w")
 
     print('<?xml version="1.0" encoding="Windows-1252"?>', file=f)
-    print("<!-- PiBDigest: " + digest + " -->", file=f)
 
     # Generate the header
     header_xml = vcproj_header.replace("%NAME%", vcproj_name)
@@ -266,7 +266,13 @@ def VCGenerateProjectFile(env, name, files, output, target=None, replacements = 
     print("\t<Files>", file=f)
     WriteProjectFiles(f, "\t\t", "", folders)
     print("\t</Files>", file=f)
+    
+    # Write the digest for detecting regeneration
     print("\t<Globals>", file=f)
+    print("\t\t<Global", file=f)
+    print('\t\t\tName="PiBDigest"', file=f)
+    print('\t\t\tValue="' + digest + '"', file=f)
+    print("\t\t/>", file=f)
     print("\t</Globals>", file=f)
 
     print("</VisualStudioProject>", file=f)
