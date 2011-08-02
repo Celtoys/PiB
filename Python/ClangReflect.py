@@ -5,6 +5,47 @@ import Process
 import BuildSystem
 
 
+class CppExportNode(BuildSystem.Node):
+    
+    def __init__(self, path, input):
+        
+        self.Path = path
+        self.Input = input
+        self.Dependencies = [ input ]
+
+    def Build(self, env):
+        
+        input_file = self.GetInputFile(env)
+        output_file = self.GetOutputFiles(env)[0]
+        print("crexport: " + os.path.basename(output_file))
+
+        # Construct the command-line
+        # TODO: Relocate
+        cmdline = [ "bin/Debug/crexport.exe" ]
+        cmdline += [ input_file ]
+        cmdline += [ "-cpp", output_file ]
+        #print(cmdline)
+
+        # Launch the exporter and wait for it to finish
+        process = Process.OpenPiped(cmdline)
+        output = Process.WaitForPipeOutput(process)
+        print(output)
+
+        return process.returncode == 0
+
+    def GetInputFile(self, env):
+
+        return self.Input.GetOutputFiles(env)[0]
+
+    def GetOutputFiles(self, env):
+
+        path = os.path.join(env.CurrentConfig.OutputPath, self.Path)
+        return [ path ]
+
+    def GetTempOutputFiles(self, env):
+
+        return self.GetOutputFiles(env)
+
 
 class MergeNode (BuildSystem.Node):
     
@@ -23,13 +64,15 @@ class MergeNode (BuildSystem.Node):
         cmdline = [ "bin/Debug/crmerge.exe" ]
         cmdline += [ output_file ]
         cmdline += [ file.GetOutputFiles(env)[0] for file in self.Dependencies ]
-        print(cmdline)
-        
+        #print(cmdline)
+
         # Launch the merger and wait for it to finish
         process = Process.OpenPiped(cmdline)
         output = Process.WaitForPipeOutput(process)
         print(output)
-        
+
+        return process.returncode == 0
+
     def GetInputFile(self, env):
 
         path = os.path.join(env.CurrentConfig.IntermediatePath, self.Path)
@@ -47,8 +90,9 @@ class MergeNode (BuildSystem.Node):
 
 class CppScanNode (BuildSystem.Node):
 
-    def __init__(self, cpp_output):
+    def __init__(self, include_paths, cpp_output):
 
+        self.IncludePaths = include_paths
         self.CppOutput = cpp_output
         self.Dependencies = [ cpp_output ]
 
@@ -65,6 +109,8 @@ class CppScanNode (BuildSystem.Node):
         cmdline += [ "-output", output_files[0] ]
         cmdline += [ "-ast_log", output_files[1] ]
         cmdline += [ "-spec_log", output_files[2] ]
+        for path in self.IncludePaths:
+            cmdline += [ "-i", path ]
         #print(cmdline)
 
         # Launch the scanner and wait for it to finish
@@ -89,8 +135,11 @@ class CppScanNode (BuildSystem.Node):
         return self.GetOutputFiles(env)
 
 
-def CppScan(cpp_output):
-    return CppScanNode(cpp_output)
+def CppScan(include_paths, cpp_output):
+    return CppScanNode(include_paths, cpp_output)
 
 def Merge(path, db_files):
     return MergeNode(path, db_files)
+
+def CppExport(path, input):
+    return CppExportNode(path, input)

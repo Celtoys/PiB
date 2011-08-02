@@ -84,6 +84,8 @@ class Environment:
         # Parse any build filters in the command-line
         self.BuildTarget = Utils.GetSysArgvProperty("-target", None)
         self.BuildInputFilter = Utils.GetSysArgvProperty("-input_filter", None)
+        if self.BuildInputFilter != None:
+            self.BuildInputFilter = self.BuildInputFilter.lower()
 
         # Set up some default configurations
         self.Configs = { }
@@ -176,7 +178,7 @@ class Environment:
         input_filename = node.GetInputFile(self)
         output_filenames = node.GetOutputFiles(self)
         input_metadata = self.GetFileMetadata(input_filename)
-
+        
         # Have any of the implicit dependencies changed?
         if not requires_build:
             for dep in input_metadata.ImplicitDeps:
