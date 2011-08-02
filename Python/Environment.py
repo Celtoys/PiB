@@ -29,8 +29,6 @@
 
 import os
 import sys
-import pickle
-import binascii
 import Utils
 import BuildSystem
 import JDKPlatform
@@ -52,7 +50,7 @@ class Config:
         self.CPPOptions = MSVCPlatform.VCCompileOptions(base_config_options)
         self.LinkOptions = MSVCPlatform.VCLinkOptions(base_config_options)
         self.LibOptions =MSVCPlatform.VCLibOptions(base_config_options)
-    
+
 
 #
 # The build environment - currently only Visual Studio 2005 is supported.
@@ -94,13 +92,9 @@ class Environment:
         self.ApplyCommandLineConfig()
 
         # Load existing file metadata from disk
-        self.FileMap = { }
-        self.FileMetadata = { }
-        if os.path.exists("metadata.pib"):
-            with open("metadata.pib", "rb") as f:
-                self.FileMap = pickle.load(f)
-                self.FileMetadata = pickle.load(f)
-    
+        self.BuildMetadata = BuildSystem.BuildMetadata.Load()
+        self.CurrentBuildTarget = None
+
     def ApplyCommandLineConfig(self):
 
         # Debug by default, overridden by whatever keyword is found in the list of args
@@ -111,23 +105,10 @@ class Environment:
                 break
 
 
-    def AddToFileMap(self, filename):
-
-        # Generate the CRC
-        filename = Utils.NormalisePath(filename)
-        crc = binascii.crc32(bytes(filename, "utf-8"))
-
-        # Check for collision
-        if crc in self.FileMap and filename != self.FileMap[crc]:
-            raise Exception("CRC collision with " + filename + " and " + self.FileMap[crc])
-
-        self.FileMap[crc] = filename
-        return crc
-
     def NewFile(self, filename):
 
         # Always add to the file map
-        crc = self.AddToFileMap(filename)
+        crc = self.BuildMetadata.AddToFileMap(filename)
         return BuildSystem.FileNode(crc)
 
     def CPPFile(self, filename):
@@ -154,30 +135,15 @@ class Environment:
 
     def GetFilename(self, crc):
 
-        return self.FileMap[crc]
+        return self.BuildMetadata.GetFilename(crc)
 
     def GetFileMetadata(self, filename):
 
-        # Return an existing metadata?
-        crc = self.AddToFileMap(filename)
-        if crc in self.FileMetadata:
-            return self.FileMetadata[crc]
-
-        # Otherwise create a new one
-        data = BuildSystem.FileMetadata()
-        self.FileMetadata[crc] = data
-        return data
+        return self.BuildMetadata.GetFileMetadata(self.CurrentBuildTarget, filename)
 
     def SaveFileMetadata(self):
 
-        # It's safe to update the mod times for any files which were different since the last build
-        for crc, metadata in self.FileMetadata.items():
-            metadata.UpdateModTime(self.FileMap[crc])
-
-        # Save to disk
-        with open("metadata.pib", "wb") as f:
-            pickle.dump(self.FileMap, f)
-            pickle.dump(self.FileMetadata, f)
+        self.BuildMetadata.Save()
 
     def DeleteTempOutput(files):
 
@@ -260,7 +226,12 @@ class Environment:
         for file in output_files:
             Utils.RemoveFile(file)
     
-    def Build(self, build_graphs, target=None):
+    def Build(self, build_graphs, target = None):
+
+        if target == None:
+            self.CurrentBuildTarget = "PiBDefaultTarget"
+        else:
+            self.CurrentBuildTarget = target
 
         # Promote to a list if necessary
         if type(build_graphs) != type([]):
@@ -285,6 +256,9 @@ class Environment:
         if "rebuild" in sys.argv or not "clean" in sys.argv:
             print("PiB Building" + target_name + "...")
             [ self.ExecuteNodeBuild(bg) for bg in build_graphs ]
+
+        self.BuildMetadata.UpdateModTimes(self.CurrentBuildTarget)
+        self.CurrentBuildTarget = None
 
 
 if __name__ == '__main__':

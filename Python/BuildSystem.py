@@ -29,6 +29,8 @@
 import os
 import sys
 import shutil
+import pickle
+import binascii
 import Utils
 
 
@@ -80,6 +82,88 @@ class FileMetadata:
     def __repr__(self):
 
         return str(self.ModTime) + "->" + str(self.ImplicitDeps)
+
+
+#
+# Metadata that persists between builds
+#
+class BuildMetadata:
+    
+    OutputFilename = "metadata.pib"
+    
+    def __init__(self):
+
+        self.Version = 1
+        self.FileMap = { }
+        self.FileMetadata = { }
+    
+    def Save(self):
+
+        with open(BuildMetadata.OutputFilename, "wb") as f:
+            pickle.dump(self, f)
+
+    def Load():
+
+        try:
+            # Open and load the metadata file if it exists
+            if os.path.exists(BuildMetadata.OutputFilename):
+                with open(BuildMetadata.OutputFilename, "rb") as f:
+                    data = pickle.load(f)
+
+                    # Return if the version matches
+                    if hasattr(data, "Version") and data.Version == 1:
+                        return data
+
+                    print("Metadata file version out of date, discarding...")
+
+        # Handle malformed files
+        except:
+            print("Error loading Metadata file, discarding...")
+
+        # Return empty constructed build metadata if it can't be loaded
+        return BuildMetadata()
+
+    def AddToFileMap(self, filename):
+
+        # Generate the CRC
+        filename = Utils.NormalisePath(filename)
+        crc = binascii.crc32(bytes(filename, "utf-8"))
+
+        # Check for collision
+        if crc in self.FileMap and filename != self.FileMap[crc]:
+            raise Exception("CRC collision with " + filename + " and " + self.FileMap[crc])
+
+        self.FileMap[crc] = filename
+        return crc
+
+    def GetFilename(self, crc):
+
+        return self.FileMap[crc]
+        
+    def GetFileMetadata(self, target, filename):
+
+        # Create unique file metadata objects for each target so that builds
+        # don't interfere with each other
+        if target not in self.FileMetadata:
+            self.FileMetadata[target] = { }
+        file_metadata = self.FileMetadata[target]
+
+        # Return an existing metadata?
+        crc = self.AddToFileMap(filename)
+        if crc in file_metadata:
+            return file_metadata[crc]
+
+        # Otherwise create a new one
+        data = FileMetadata()
+        file_metadata[crc] = data
+        return data
+
+    def UpdateModTimes(self, target):
+
+        # It's safe to update the mod times for any files which were different since the last build
+        file_metadata = self.FileMetadata[target]
+        for crc, metadata in file_metadata.items():
+            metadata.UpdateModTime(self.GetFilename(crc))
 
 
 #
