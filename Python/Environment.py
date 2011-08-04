@@ -175,19 +175,12 @@ class Environment:
             (a, b) = self.ExecuteNodeBuild(dep)
             requires_build |= a
             success &= b
-            
-            #if a:
-            #    print("Dependency changed " + str(dep))
 
         # Get some info about the input/output files
         input_filename = node.GetInputFile(self)
         output_filenames = node.GetOutputFiles(self)
         input_metadata = self.GetFileMetadata(input_filename)
-        
-        #if requires_build:
-        #    print("   " + input_filename)
-        #    print("   " + str(output_filenames))
-        
+
         # Have any of the implicit dependencies changed?
         if not requires_build:
             for dep in input_metadata.ImplicitDeps:
@@ -211,10 +204,6 @@ class Environment:
             if self.BuildInputFilter not in input_filename.lower():
                 requires_build = False
 
-    
-        #if requires_build:
-        #    print("   still building: " + str(success))
-            
         # Execute any build steps
         if requires_build and success:
             if Utils.ObjectHasMethod(node, "Build"):
@@ -228,7 +217,6 @@ class Environment:
 
                 if not node.Build(self):
                     success = False
-                
 
         return (requires_build, success)
     

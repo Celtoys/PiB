@@ -43,33 +43,22 @@ class FileMetadata:
     def __init__(self):
 
         self.ModTime = 0
-        self.Changed = True
         self.ImplicitDeps = [ ]
 
     def HasFileChanged(self, filename):
 
-        # Check the cached result
-        if self.Changed:
-            return True
-
         # If the file no longer exists, it has changed
         if not os.path.exists(filename):
-            self.Changed = True
             return True
 
         # Compare modification times
         mod_time = os.path.getmtime(filename)
-        if mod_time != self.ModTime:
-            self.Changed = True
-
-        return self.Changed
+        return mod_time != self.ModTime
 
     def UpdateModTime(self, filename):
 
-        if self.Changed and os.path.exists(filename):
-
+        if os.path.exists(filename):
             self.ModTime = os.path.getmtime(filename)
-            self.Changed = False
 
     def SetImplicitDeps(self, env, deps):
 
