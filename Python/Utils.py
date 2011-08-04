@@ -152,5 +152,5 @@ class IncludeScanner:
             path = line[len(self.Prefix):].lstrip()
             self.Includes.append(self.Env.NewFile(path))
 
-        else:
+        elif not self.Env.NoToolOutput:
             print(line)

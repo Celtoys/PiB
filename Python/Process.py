@@ -70,14 +70,16 @@ def WaitForPipeOutput(process, line_handler=None):
             line_handler(bytearray(line).decode())
 
         # Force commit of the returncode parameter in process
-        process.poll()
+        while process.returncode == None:
+            process.poll()
 
     else:
 
         output = process.stdout.read()
 
         # Force commit of the returncode parameter in process
-        process.poll()
+        while process.returncode == None:
+            process.poll()
 
         return bytearray(output).decode()
 

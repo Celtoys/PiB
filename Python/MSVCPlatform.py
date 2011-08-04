@@ -583,7 +583,9 @@ class VCCompileNode (BuildSystem.Node):
         if len(output_files) > 1:
             cmdline += [ "/Fd" + output_files[1] ]
         cmdline += [ "/Fo" + output_files[0], self.GetInputFile(env) ]
-        #print(cmdline)
+
+        if env.ShowCmdLine:
+            print(cmdline)
 
         # Create the include scanner and launch the compiler
         scanner = Utils.IncludeScanner(env, "Note: including file:")
@@ -656,7 +658,7 @@ class VCLibScanner:
             # Either start scanning or report everything
             if line == self.Start:
                 self.Scanning = True
-            else:
+            elif not self.Env.NoToolOutput:
                 print(line)
             return
 
@@ -695,7 +697,9 @@ class VCLinkNode (BuildSystem.Node):
         cmdline += [ '/OUT:' + output_files[0] ]
         cmdline.extend(dep.GetOutputFiles(env)[0] for dep in self.Dependencies)
         cmdline.extend(dep.GetOutputFiles(env)[0] for dep in self.LibFiles)
-        #print(cmdline)
+
+        if env.ShowCmdLine:
+            print(cmdline)
 
         # Create the lib scanner and run the link process
         scanner = VCLibScanner(env)
@@ -756,15 +760,22 @@ class VCLibNode (BuildSystem.Node):
 
     def Build(self, env):
 
+        output_files = self.GetOutputFiles(env)
+
         # Construct the command-line
         cmdline = [ "lib.exe" ] + env.CurrentConfig.LibOptions.CommandLine
-        cmdline += [ '/OUT:' + self.GetOutputFiles(env)[0] ]
+        cmdline += [ '/OUT:' + output_files[0] ]
         cmdline.extend(dep.GetOutputFiles(env)[0] for dep in self.Dependencies)
-        #print(cmdline)
+        print("Librarian: " + output_files[0])
+
+        if env.ShowCmdLine:
+            print(cmdline)
 
         # Run the librarian process
         process = Process.OpenPiped(cmdline, env.EnvironmentVariables)
-        Process.PollPipeOutput(process, lambda x: print(x))
+        output = Process.WaitForPipeOutput(process)
+        if not env.NoToolOutput:
+            print(output)
 
         return process.returncode == 0
 

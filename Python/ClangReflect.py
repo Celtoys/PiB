@@ -24,12 +24,15 @@ class CppExportNode(BuildSystem.Node):
         cmdline = [ "bin/Debug/crexport.exe" ]
         cmdline += [ input_file ]
         cmdline += [ "-cpp", output_file ]
-        #print(cmdline)
+
+        if env.ShowCmdLine:
+            print(cmdline)
 
         # Launch the exporter and wait for it to finish
         process = Process.OpenPiped(cmdline)
         output = Process.WaitForPipeOutput(process)
-        print(output)
+        if not env.NoToolOutput:
+            print(output)
 
         return process.returncode == 0
 
@@ -64,12 +67,15 @@ class MergeNode (BuildSystem.Node):
         cmdline = [ "bin/Debug/crmerge.exe" ]
         cmdline += [ output_file ]
         cmdline += [ file.GetOutputFiles(env)[0] for file in self.Dependencies ]
-        #print(cmdline)
+
+        if env.ShowCmdLine:
+            print(cmdline)
 
         # Launch the merger and wait for it to finish
         process = Process.OpenPiped(cmdline)
         output = Process.WaitForPipeOutput(process)
-        print(output)
+        if not env.NoToolOutput:
+            print(output)
 
         return process.returncode == 0
 
@@ -111,7 +117,9 @@ class CppScanNode (BuildSystem.Node):
         cmdline += [ "-spec_log", output_files[2] ]
         for path in self.IncludePaths:
             cmdline += [ "-i", path ]
-        #print(cmdline)
+
+        if env.ShowCmdLine:
+            print(cmdline)
 
         # Launch the scanner and wait for it to finish
         output = Utils.IncludeScanner(env, "Included:")
