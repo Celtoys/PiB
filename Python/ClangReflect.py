@@ -7,10 +7,11 @@ import BuildSystem
 
 class CppExportNode(BuildSystem.Node):
     
-    def __init__(self, path, input):
+    def __init__(self, path, input, map_file):
         
         self.Path = path
         self.Input = input
+        self.MapFile = map_file
         self.Dependencies = [ input ]
 
     def Build(self, env):
@@ -24,6 +25,8 @@ class CppExportNode(BuildSystem.Node):
         cmdline = [ "bin/Debug/crexport.exe" ]
         cmdline += [ input_file ]
         cmdline += [ "-cpp", output_file ]
+        if self.MapFile != None:
+            cmdline += [ "-map", self.MapFile ]
 
         if env.ShowCmdLine:
             print(cmdline)
@@ -149,5 +152,5 @@ def CppScan(include_paths, cpp_output):
 def Merge(path, db_files):
     return MergeNode(path, db_files)
 
-def CppExport(path, input):
-    return CppExportNode(path, input)
+def CppExport(path, input, map_file):
+    return CppExportNode(path, input, map_file)

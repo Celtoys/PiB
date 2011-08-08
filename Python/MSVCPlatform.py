@@ -408,7 +408,7 @@ class VCLinkOptions:
         self.LargeAddressAware = False
         self.LTCG = False
         self.Machine = VCMachine.X86
-        self.MapFile = None
+        self.MapFile = False
         self.UnrefSymbols = VCUnrefSymbols.KEEP
         self.DupComdats = VCDupComdats.KEEP
         self.Subsystem = VCSubsystem.WINDOWS
@@ -458,10 +458,6 @@ class VCLinkOptions:
             cmdline += [ "/LTCG" ]
 
         cmdline += [ self.Machine ]
-
-        if self.MapFile != None:
-            cmdline += [ "/MAP:" + self.MapFile ]
-
         cmdline += [ self.UnrefSymbols ]
         cmdline += [ self.DupComdats ]
         cmdline += [ self.Subsystem ]
@@ -695,8 +691,10 @@ class VCLinkNode (BuildSystem.Node):
         # Construct the command-line
         cmdline = [ "link.exe" ] + env.CurrentConfig.LinkOptions.CommandLine
         cmdline += [ '/OUT:' + output_files[0] ]
-        cmdline.extend(dep.GetOutputFiles(env)[0] for dep in self.Dependencies)
-        cmdline.extend(dep.GetOutputFiles(env)[0] for dep in self.LibFiles)
+        if env.CurrentConfig.LinkOptions.MapFile:
+            cmdline += [ "/MAP:" + output_files[1] ]
+        cmdline += [ dep.GetOutputFiles(env)[0] for dep in self.Dependencies ]
+        cmdline += [ dep.GetOutputFiles(env)[0] for dep in self.LibFiles ]
 
         if env.ShowCmdLine:
             print(cmdline)
@@ -734,6 +732,12 @@ class VCLinkNode (BuildSystem.Node):
         # Add the EXE/DLL
         (path, ext) = self.GetPrimaryOutput(env.CurrentConfig)
         files = [ path + ext ]
+
+        # Make sure the .map file is in the intermediate directory, of the same name as the output
+        if env.CurrentConfig.LinkOptions.MapFile:
+            map_file = os.path.splitext(self.Path)[0] + ".map"
+            map_file = os.path.join(env.CurrentConfig.IntermediatePath, map_file)
+            files += [ map_file ]
 
         if env.CurrentConfig.LinkOptions.Debug:
             files += [ path + ".pdb" ]
