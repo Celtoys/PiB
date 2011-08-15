@@ -51,6 +51,11 @@ class Config:
         self.LinkOptions = MSVCPlatform.VCLinkOptions(base_config_options)
         self.LibOptions =MSVCPlatform.VCLibOptions(base_config_options)
 
+    def SetPathPrefix(self, prefix):
+
+        self.IntermediatePath = os.path.join(prefix, self.IntermediatePath)
+        self.OutputPath = os.path.join(prefix, self.OutputPath)
+
 
 #
 # The build environment - currently only Visual Studio 2005 is supported.
@@ -130,6 +135,12 @@ class Environment:
     def JavaFile(self, filename):
         
         return JDKPlatform.JDKCompileNode(filename)
+
+    def CopyFile(self, source, dest_path):
+
+        dest = os.path.join(dest_path, os.path.basename(source))
+        output = self.NewFile(source)
+        return BuildSystem.CopyNode(output, source, dest)
 
     def CopyOutputFile(self, output, index, dest_path):
 
@@ -231,10 +242,11 @@ class Environment:
     
     def Build(self, build_graphs, target = None):
 
+        self.CurrentBuildTarget = self.CurrentConfig.Name + ":"
         if target == None:
-            self.CurrentBuildTarget = "PiBDefaultTarget"
+            self.CurrentBuildTarget += "PiBDefaultTarget"
         else:
-            self.CurrentBuildTarget = target
+            self.CurrentBuildTarget += target
 
         # Promote to a list if necessary
         if type(build_graphs) != type([]):

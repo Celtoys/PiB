@@ -28,6 +28,7 @@
 
 import os
 import sys
+import gzip
 import shutil
 import pickle
 import binascii
@@ -88,7 +89,7 @@ class BuildMetadata:
     
     def Save(self):
 
-        with open(BuildMetadata.OutputFilename, "wb") as f:
+        with gzip.open(BuildMetadata.OutputFilename, "wb") as f:
             pickle.dump(self, f)
 
     def Load():
@@ -96,7 +97,7 @@ class BuildMetadata:
         try:
             # Open and load the metadata file if it exists
             if os.path.exists(BuildMetadata.OutputFilename):
-                with open(BuildMetadata.OutputFilename, "rb") as f:
+                with gzip.open(BuildMetadata.OutputFilename, "rb") as f:
                     data = pickle.load(f)
 
                     # Return if the version matches

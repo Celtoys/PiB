@@ -5,6 +5,17 @@ import Process
 import BuildSystem
 
 
+# Directory where the clReflect executables are located
+_InstallLocation = None
+
+
+def _MakePath(filename):
+
+    if _InstallLocation:
+        return os.path.join(_InstallLocation, filename)
+    return filename
+
+
 class CppExportNode(BuildSystem.Node):
     
     def __init__(self, path, input, map_file):
@@ -22,7 +33,7 @@ class CppExportNode(BuildSystem.Node):
 
         # Construct the command-line
         # TODO: Relocate
-        cmdline = [ "bin/Debug/clexport.exe" ]
+        cmdline = [ _MakePath("clexport.exe") ]
         cmdline += [ input_file ]
         cmdline += [ "-cpp", output_file ]
         if self.MapFile != None:
@@ -67,7 +78,7 @@ class MergeNode (BuildSystem.Node):
 
         # Construct the command-line
         # TODO: Relocate
-        cmdline = [ "bin/Debug/clmerge.exe" ]
+        cmdline = [ _MakePath("clmerge.exe") ]
         cmdline += [ output_file ]
         cmdline += [ file.GetOutputFiles(env)[0] for file in self.Dependencies ]
 
@@ -113,7 +124,7 @@ class CppScanNode (BuildSystem.Node):
 
         # Construct the command-line
         # TODO: Relocate
-        cmdline = [ "bin/Debug/clscan.exe" ]
+        cmdline = [ _MakePath("clscan.exe") ]
         cmdline += [ input_file, "-output_headers" ]
         cmdline += [ "-output", output_files[0] ]
         cmdline += [ "-ast_log", output_files[1] ]
@@ -154,3 +165,7 @@ def Merge(path, db_files):
 
 def CppExport(path, input, map_file):
     return CppExportNode(path, input, map_file)
+
+def SetInstallLocation(location):
+    global _InstallLocation
+    _InstallLocation = location
