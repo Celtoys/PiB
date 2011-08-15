@@ -18,11 +18,11 @@ class CppExportNode(BuildSystem.Node):
         
         input_file = self.GetInputFile(env)
         output_file = self.GetOutputFiles(env)[0]
-        print("crexport: " + os.path.basename(output_file))
+        print("clexport: " + os.path.basename(output_file))
 
         # Construct the command-line
         # TODO: Relocate
-        cmdline = [ "bin/Debug/crexport.exe" ]
+        cmdline = [ "bin/Debug/clexport.exe" ]
         cmdline += [ input_file ]
         cmdline += [ "-cpp", output_file ]
         if self.MapFile != None:
@@ -63,11 +63,11 @@ class MergeNode (BuildSystem.Node):
     def Build(self, env):
 
         output_file = self.GetOutputFiles(env)[0]
-        print("crmerge: " + os.path.basename(output_file))
+        print("clmerge: " + os.path.basename(output_file))
 
         # Construct the command-line
         # TODO: Relocate
-        cmdline = [ "bin/Debug/crmerge.exe" ]
+        cmdline = [ "bin/Debug/clmerge.exe" ]
         cmdline += [ output_file ]
         cmdline += [ file.GetOutputFiles(env)[0] for file in self.Dependencies ]
 
@@ -109,11 +109,11 @@ class CppScanNode (BuildSystem.Node):
 
         input_file = self.GetInputFile(env)
         output_files = self.GetOutputFiles(env)
-        print("crscan: " + os.path.basename(input_file))
+        print("clscan: " + os.path.basename(input_file))
 
         # Construct the command-line
         # TODO: Relocate
-        cmdline = [ "bin/Debug/crscan.exe" ]
+        cmdline = [ "bin/Debug/clscan.exe" ]
         cmdline += [ input_file, "-output_headers" ]
         cmdline += [ "-output", output_files[0] ]
         cmdline += [ "-ast_log", output_files[1] ]
