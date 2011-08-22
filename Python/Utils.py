@@ -154,3 +154,43 @@ class IncludeScanner:
 
         elif not self.Env.NoToolOutput:
             print(line)
+
+
+def ExecPibfile(pibfile):
+
+    # Load the build script file
+    if not os.path.exists(pibfile):
+        print("ERROR: No pibfile found")
+        sys.exit(1)
+    code = None
+    with open(pibfile) as f:
+        code = f.read()
+
+    # Switch to the directory of the pibfile
+    cur_dir = os.getcwd()
+    pibfile_dir = os.path.dirname(pibfile)
+    if pibfile_dir != "":
+        os.chdir(pibfile_dir)
+
+    # Inject the environment initialisation/shutdown code
+    prologue = """
+from BuildSystem import *
+from Environment import *
+from Utils import *
+from MSVCGeneration import *
+from CppLanguage import *
+
+env = Environment.New()
+if env == None:
+    sys.exit(1)
+    """
+    epilogue = """
+env.SaveFileMetadata()
+    """
+    code = prologue + code + epilogue
+
+    # Execute the script
+    exec(code)
+
+    # Restore initial directory
+    os.chdir(cur_dir)

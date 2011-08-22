@@ -57,29 +57,4 @@ import Utils
 
 # See if the caller wants to use a custom build script name/location
 pibfile = Utils.GetSysArgvProperty("-pf", "pibfile")
-
-# Load the build script file
-if not os.path.exists(pibfile):
-    print("ERROR: No pibfile found")
-    sys.exit(1)
-code = None
-with open(pibfile) as f:
-    code = f.read()
-
-# Inject the environment initialisation/shutdown code
-prologue = """
-from BuildSystem import *
-from Environment import *
-from Utils import *
-from MSVCGeneration import *
-
-env = Environment.New()
-if env == None:
-    sys.exit(1)
-"""
-epilogue = """
-env.SaveFileMetadata()
-"""
-code = prologue + code + epilogue
-
-exec(code)
+Utils.ExecPibfile(pibfile)

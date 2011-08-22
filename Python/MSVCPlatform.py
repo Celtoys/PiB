@@ -239,6 +239,7 @@ class VCCompileOptions:
         self.CallingConvention = VCCallingConvention.CDECL
         self.DebuggingInfo = VCDebuggingInfo.PDBEDITANDCONTINUE
         self.RuntimeChecks = True
+        self.DetectBufferOverruns = True
         self.Optimisations = VCOptimisations.DISABLE
         self.WholeProgramOptimisation = False
         self.CRTType = VCCRTType.MT_DEBUG
@@ -255,6 +256,7 @@ class VCCompileOptions:
         self.InitDebug()
         self.DebuggingInfo = VCDebuggingInfo.PDB
         self.RuntimeChecks = False
+        self.DetectBufferOverruns = False
         self.Optimisations = VCOptimisations.SPEED
         self.WholeProgramOptimisation = True
         self.CRTType = VCCRTType.MT
@@ -301,6 +303,9 @@ class VCCompileOptions:
 
         if self.RuntimeChecks:
             cmdline += [ "/RTC1" ]
+
+        if not self.DetectBufferOverruns:
+            cmdline += [ "/GS-" ]
 
         cmdline += [ self.Optimisations ]
 
@@ -413,7 +418,8 @@ class VCLinkOptions:
         self.DupComdats = VCDupComdats.KEEP
         self.Subsystem = VCSubsystem.WINDOWS
         self.DefaultLibs = [ ]
-        self.NoDefaultLibs = [ ]
+        self.NoDefaultLibs = False
+        self.NoDefaultLib = [ ]
         self.LibPaths = [ ]
         self.UpdateCommandLine()
 
@@ -465,8 +471,11 @@ class VCLinkOptions:
         for lib in self.DefaultLibs:
             cmdline += [ "/DEFAULTLIB:" + lib ]
 
-        for lib in self.NoDefaultLibs:
+        for lib in self.NoDefaultLib:
             cmdline += [ "/NODEFAULTLIB:" + lib ]
+
+        if self.NoDefaultLibs:
+            cmdline += [ "/NODEFAULTLIB" ]
 
         for path in self.LibPaths:
             cmdline += [ "/LIBPATH:" + path ]

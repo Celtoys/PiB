@@ -162,7 +162,7 @@ def DoesProjectNeedUpdating(env, vcproj_path, files):
 
 
 # Need: input files, configurations and args to run for configurations
-def VCGenerateProjectFile(env, name, files, output, target=None, replacements = [ ]):
+def VCGenerateProjectFile(env, name, files, output, target=None, configs=None, replacements = [ ]):
 
     # Generate file paths
     vcproj_path = name + ".vcproj"
@@ -183,6 +183,10 @@ def VCGenerateProjectFile(env, name, files, output, target=None, replacements = 
         return vcproj_guid
 
     print("Generating VCProject file: " + vcproj_path)
+
+    # Use default configs from the environment if none are specified
+    if configs == None:
+        configs = env.Configs
 
     # Figure out the relative location of the pibfile
     pibfile = os.path.relpath("pibfile", vcproj_dir)
@@ -212,9 +216,9 @@ def VCGenerateProjectFile(env, name, files, output, target=None, replacements = 
     for name, config in env.Configs.items():
 
         xml = vcproj_config.replace("%CONFIG%", config.Name)
-        xml = xml.replace("%BUILD%", pibcmd + config.CmdLineArg + target_opt)
-        xml = xml.replace("%REBUILD%", pibcmd + "rebuild " + config.CmdLineArg + target_opt)
-        xml = xml.replace("%CLEAN%", pibcmd + "clean " + config.CmdLineArg + target_opt)
+        xml = xml.replace("%BUILD%", pibcmd + "-config " + config.CmdLineArg + target_opt)
+        xml = xml.replace("%REBUILD%", pibcmd + "rebuild " + "-config " + config.CmdLineArg + target_opt)
+        xml = xml.replace("%CLEAN%", pibcmd + "clean " + "-config " + config.CmdLineArg + target_opt)
         xml = xml.replace("%OUTPUTDIR%", os.path.relpath(config.OutputPath, vcproj_dir))
         xml = xml.replace("%INTERDIR%", os.path.relpath(config.IntermediatePath, vcproj_dir))
 

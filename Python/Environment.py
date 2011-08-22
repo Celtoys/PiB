@@ -49,12 +49,18 @@ class Config:
         self.OutputPath = "bin/" + name
         self.CPPOptions = MSVCPlatform.VCCompileOptions(base_config_options)
         self.LinkOptions = MSVCPlatform.VCLinkOptions(base_config_options)
-        self.LibOptions =MSVCPlatform.VCLibOptions(base_config_options)
+        self.LibOptions = MSVCPlatform.VCLibOptions(base_config_options)
 
     def SetPathPrefix(self, prefix):
 
         self.IntermediatePath = os.path.join(prefix, self.IntermediatePath)
         self.OutputPath = os.path.join(prefix, self.OutputPath)
+
+    def UpdateCommandLines(self):
+
+        self.CPPOptions.UpdateCommandLine()
+        self.LinkOptions.UpdateCommandLine()
+        self.LibOptions.UpdateCommandLine()
 
 
 #
@@ -87,6 +93,7 @@ class Environment:
         self.ForceBuild = "-force" in sys.argv
         self.NoToolOutput = "-no_tool_output" in sys.argv
         self.ShowCmdLine = "-show_cmdline" in sys.argv
+        self.ConfigName = Utils.GetSysArgvProperty("-config", "debug")
 
         # Parse any build filters in the command-line
         self.BuildTarget = Utils.GetSysArgvProperty("-target", None)
@@ -98,21 +105,11 @@ class Environment:
         self.Configs = { }
         self.Configs["debug"] = Config("Debug", "debug", MSVCPlatform.VCBaseConfig.DEBUG)
         self.Configs["release"] = Config("Release", "release", MSVCPlatform.VCBaseConfig.RELEASE)
-        self.ApplyCommandLineConfig()
+        self.CurrentConfig = None        
 
         # Load existing file metadata from disk
         self.BuildMetadata = BuildSystem.BuildMetadata.Load()
         self.CurrentBuildTarget = None
-
-    def ApplyCommandLineConfig(self):
-
-        # Debug by default, overridden by whatever keyword is found in the list of args
-        self.CurrentConfig = self.Configs["debug"]
-        for name, config in self.Configs.items():
-            if name in sys.argv:
-                self.CurrentConfig = config
-                break
-
 
     def NewFile(self, filename):
 
@@ -240,8 +237,14 @@ class Environment:
         for file in output_files:
             Utils.RemoveFile(file)
     
-    def Build(self, build_graphs, target = None):
+    def Build(self, build_graphs, target = None, configs = None):
 
+        # Apply the current build configuration
+        if configs == None:
+            configs = self.Configs
+        self.CurrentConfig = configs[self.ConfigName]
+
+        # Apply the current build target
         self.CurrentBuildTarget = self.CurrentConfig.Name + ":"
         if target == None:
             self.CurrentBuildTarget += "PiBDefaultTarget"
@@ -274,6 +277,7 @@ class Environment:
 
         self.BuildMetadata.UpdateModTimes(self.CurrentBuildTarget)
         self.CurrentBuildTarget = None
+        self.CurrentConfig = None
 
 
 if __name__ == '__main__':
