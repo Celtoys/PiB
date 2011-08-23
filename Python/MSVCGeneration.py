@@ -162,7 +162,7 @@ def DoesProjectNeedUpdating(env, vcproj_path, files):
 
 
 # Need: input files, configurations and args to run for configurations
-def VCGenerateProjectFile(env, name, files, output, target=None, configs=None, replacements = [ ]):
+def VCGenerateProjectFile(env, name, files, output, target=None, configs=None, replacements = [ ], pibfile = "pibfile"):
 
     # Generate file paths
     vcproj_path = name + ".vcproj"
@@ -189,11 +189,11 @@ def VCGenerateProjectFile(env, name, files, output, target=None, configs=None, r
         configs = env.Configs
 
     # Figure out the relative location of the pibfile
-    pibfile = os.path.relpath("pibfile", vcproj_dir)
+    pibfile = os.path.relpath(pibfile, vcproj_dir)
     pibfile_dir = os.path.dirname(pibfile)
 
     # Switch to the pibfile directory before launching the build
-    pibcmd = "pib "
+    pibcmd = "pib -pf " + os.path.basename(pibfile) + " "
     if pibfile_dir != "":
         pibcmd = "cd " + pibfile_dir + " &amp; " + pibcmd       # '&' in XML-speak
 

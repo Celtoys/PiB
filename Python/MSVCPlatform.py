@@ -648,7 +648,6 @@ class VCLibScanner:
         self.LibsAdded = { }
         self.Libs = [ ]
         self.Env = env
-        self.Scanning = False
 
     def __call__(self, line):
 
@@ -658,25 +657,18 @@ class VCLibScanner:
         # Strip newline
         line = line.strip("\r\n")
 
-        if self.Scanning == False:
-
-            # Either start scanning or report everything
-            if line == self.Start:
-                self.Scanning = True
-            elif not self.Env.NoToolOutput:
-                print(line)
+        # Skip lines with known prefixes used to gather libraries
+        if line.startswith(self.Start) or line.startswith(self.End):
             return
 
-        # End of scanning?
-        if line == self.End:
-            self.Scanning = False
-            return
-
+        # Gather library dependencies or print the line
         if line.startswith(self.Prefix):
             lib = line[len(self.Prefix):-1]
             if lib not in self.LibsAdded:
                 self.Libs += [ self.Env.NewFile(lib) ]
                 self.LibsAdded[lib] = True
+        else:
+            print(line)
 
 
 #
