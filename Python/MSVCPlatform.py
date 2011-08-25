@@ -216,6 +216,12 @@ VCCRTType = Utils.enum(
     MT_DEBUG = '/MTd'
 )
 
+VCExceptionHandling = Utils.enum(
+    DISABLE = None,
+    CPP_ONLY = '/EHsc',
+    CPP_SEH = '/EHa',
+)
+
 
 class VCCompileOptions:
 
@@ -236,9 +242,11 @@ class VCCompileOptions:
         self.Architecture = VCArchitecture.DEFAULT
         self.FloatingPoint = VCFloatingPoint.PRECISE
         self.FloatingPointExceptions = False
+        self.ExceptionHandling = VCExceptionHandling.CPP_ONLY
         self.CallingConvention = VCCallingConvention.CDECL
         self.DebuggingInfo = VCDebuggingInfo.PDBEDITANDCONTINUE
         self.RuntimeChecks = True
+        self.RTTI = True
         self.DetectBufferOverruns = True
         self.Optimisations = VCOptimisations.DISABLE
         self.WholeProgramOptimisation = False
@@ -270,7 +278,6 @@ class VCCompileOptions:
         cmdline = [
             '/c',                   # Compile only
             '/showIncludes',        # Show includes for dependency evaluation
-            '/EHsc',                # Synchronous (C++) and Asynchronous (structured) exception handling
             '/errorReport:none'     # Don't send any ICEs to Microsoft
         ]
 
@@ -278,9 +285,12 @@ class VCCompileOptions:
 
         if self.NoLogo:
             cmdline += [ '/nologo' ]
-
+        
         cmdline += [ "/W" + str(self.WarningLevel) ]
         cmdline += [ self.CRTType ]
+
+        if self.ExceptionHandling != None:
+            cmdline += [ self.ExceptionHandling ]
 
         if self.WarningsAsErrors:
             cmdline += [ "/WX" ]
@@ -303,6 +313,9 @@ class VCCompileOptions:
 
         if self.RuntimeChecks:
             cmdline += [ "/RTC1" ]
+
+        if not self.RTTI:
+            cmdline += [ "/GR-" ]
 
         if not self.DetectBufferOverruns:
             cmdline += [ "/GS-" ]
