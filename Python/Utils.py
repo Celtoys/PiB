@@ -160,7 +160,7 @@ def ExecPibfile(pibfile):
 
     # Load the build script file
     if not os.path.exists(pibfile):
-        print("ERROR: No pibfile found")
+        print("ERROR: No '" + pibfile + "' found")
         sys.exit(1)
     code = None
     with open(pibfile) as f:

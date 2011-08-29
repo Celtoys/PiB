@@ -56,6 +56,12 @@ class Config:
         self.IntermediatePath = os.path.join(prefix, self.IntermediatePath)
         self.OutputPath = os.path.join(prefix, self.OutputPath)
 
+    def SetPaths(self, path):
+
+        path = path.replace("%config", self.Name)
+        self.IntermediatePath = path.replace("%type", "obj")
+        self.OutputPath = path.replace("%type", "bin")
+
     def UpdateCommandLines(self):
 
         self.CPPOptions.UpdateCommandLine()
