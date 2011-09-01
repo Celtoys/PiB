@@ -127,10 +127,10 @@ class FXCompileOptions:
         if self.DisableValidation: cmdline += [ '/Vd' ]
         if self.EnableDebugInfo: cmdline += [ '/Zi' ]
 
-        #if self.RowMajorMatrices:
-        #    cmdline += [ '/Zpr' ]
-        #else:
-        #    cmdline += [ '/Zpc' ]
+        if self.RowMajorMatrices:
+            cmdline += [ '/Zpr' ]
+        else:
+            cmdline += [ '/Zpc' ]
 
         if self.PartialPrecision: cmdline += [ '/Gpp' ]
         if self.AvoidFlowControl: cmdline += [ '/Gfa' ]

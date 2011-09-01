@@ -100,7 +100,6 @@ class Environment:
         self.NoToolOutput = "-no_tool_output" in sys.argv
         self.ShowCmdLine = "-show_cmdline" in sys.argv
         self.ConfigName = Utils.GetSysArgvProperty("-config", "debug")
-        self.Verbose = "-verbose" in sys.argv
 
         # Parse any build filters in the command-line
         self.BuildTarget = Utils.GetSysArgvProperty("-target", None)
@@ -190,8 +189,6 @@ class Environment:
             (a, b) = self.ExecuteNodeBuild(dep)
             requires_build |= a
             success &= b
-            if a and self.Verbose:
-                print("Explicit dependency changed: " + str(dep))
 
         # Get some info about the input/output files
         input_filename = node.GetInputFile(self)
@@ -204,22 +201,16 @@ class Environment:
                 (a, b) = self.ExecuteNodeBuild(dep)
                 requires_build |= a
                 success &= b
-                if a and self.Verbose:
-                    print("Implicit dependency changed: " + str(dep))
 
         # If the dependencies haven't changed, check to see if the node itself has been changed
         if not requires_build and input_metadata.HasFileChanged(input_filename):
             requires_build = True
-            if self.Verbose:
-                print("Input has changed: " + input_filename)
 
         # If any output files don't exist and no build is required, we must build!
         if not requires_build:
             for output_file in output_filenames:
                 if input_filename != output_file and not os.path.exists(output_file):
                     requires_build = True
-                    if self.Verbose:
-                        print("Output file doesn't exist: " + output_file)
                     break
 
         # At the last minute, cancel any builds if they're excluded by the input filter
