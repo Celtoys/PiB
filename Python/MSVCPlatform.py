@@ -251,6 +251,7 @@ class VCCompileOptions:
         self.Optimisations = VCOptimisations.DISABLE
         self.WholeProgramOptimisation = False
         self.CRTType = VCCRTType.MT_DEBUG
+        self.Alignment = 8
         self.Defines = [ 'WIN32', '_WINDOWS' ]
         self.DisabledWarnings = [ ]
         self.IncludePaths = [ ]
@@ -302,6 +303,7 @@ class VCCompileOptions:
             cmdline += [ self.Architecture ]
 
         cmdline += [ self.FloatingPoint ]
+        cmdline += [ '/Zp' + str(self.Alignment) ]
 
         if self.FloatingPointExceptions:
             cmdline += "/fp:except"
@@ -542,7 +544,8 @@ class VCLibOptions:
         self.Subsystem = None
         self.WarningsAsErrors = False
         self.LibPaths = [ ]
-        self.NoDefaultLibs = [ ]
+        self.NoDefaultLibs = False
+        self.NoDefaultLib = [ ]
         self.UpdateCommandLine()
 
     def InitRelease(self):
@@ -576,8 +579,11 @@ class VCLibOptions:
         for lib in self.LibPaths:
             cmdline += [ '/LIBPATH:' + lib ]
 
-        for lib in self.NoDefaultLibs:
-            cmdline += [ '/NODEFAULTLIB:' + lib]
+        for lib in self.NoDefaultLib:
+            cmdline += [ "/NODEFAULTLIB:" + lib ]
+
+        if self.NoDefaultLibs:
+            cmdline += [ "/NODEFAULTLIB" ]
 
         self.CommandLine = cmdline
 

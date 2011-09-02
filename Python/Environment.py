@@ -51,11 +51,6 @@ class Config:
         self.LinkOptions = MSVCPlatform.VCLinkOptions(base_config_options)
         self.LibOptions = MSVCPlatform.VCLibOptions(base_config_options)
 
-    def SetPathPrefix(self, prefix):
-
-        self.IntermediatePath = os.path.join(prefix, self.IntermediatePath)
-        self.OutputPath = os.path.join(prefix, self.OutputPath)
-
     def SetPaths(self, path):
 
         path = path.replace("%config", self.Name)
