@@ -172,7 +172,7 @@ def ExecPibfile(pibfile):
     if pibfile_dir != "":
         os.chdir(pibfile_dir)
 
-    # Inject the environment initialisation/shutdown code
+    # Compile the environment initialisation code
     prologue = """
 from BuildSystem import *
 from Environment import *
@@ -184,13 +184,22 @@ env = Environment.New()
 if env == None:
     sys.exit(1)
     """
+    prologue_compiled = compile(prologue, "<prologue>", "exec")
+
+    # Compile the shutdown code    
     epilogue = """
 env.SaveFileMetadata()
     """
-    code = prologue + code + epilogue
+    epilogue_compiled = compile(epilogue, "<epilogue>", "exec")
 
-    # Execute the script
-    exec(code)
+    # Compile the user code
+    code_compiled = compile(code, pibfile, "exec")
+
+    # Execute the compiled code in an isolated namespace
+    globals = {}
+    exec(prologue_compiled, globals)
+    exec(code_compiled, globals)
+    exec(epilogue_compiled, globals)
 
     # Restore initial directory
     os.chdir(cur_dir)
