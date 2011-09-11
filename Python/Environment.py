@@ -86,7 +86,8 @@ class Environment:
         # Add the JDK
         # TODO: Need to decide whether all environments need to be present, PiB is fault-tolerant or
         # you only need what build environments you try to use at runtime
-        envvars["PATH"] += ";" + JDKPlatform.GetJDKBinPath()
+        # TODO: This envvar modification needs to be done dynamically when the JDK is requested
+        #envvars["PATH"] += ";" + JDKPlatform.GetJDKBinPath()
         
         return Environment(envvars)
 
