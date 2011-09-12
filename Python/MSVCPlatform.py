@@ -67,6 +67,8 @@ def GetVisualCEnv():
     # Locate the Visual Studio tools path
     vs_tools_dir = os.getenv("VS80COMNTOOLS")
     if vs_tools_dir == None:
+        vs_tools_dir = os.getenv("VS100COMNTOOLS")
+    if vs_tools_dir == None:
         print("ERROR: Couldn't locate Visual Studio Tools environment variable")
         return None
 
