@@ -11,6 +11,7 @@ class CppBuild:
         self.hpp_files = []
         for dir in dirs:
             self.cpp_files += Utils.Glob(dir, "*.cpp")
+            self.cpp_files += Utils.Glob(dir, "*.c")
             self.hpp_files += Utils.Glob(dir, "*.h")
 
         # Compile C++ files and create file nodes out of external library references
