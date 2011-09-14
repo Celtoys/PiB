@@ -56,6 +56,11 @@ class Config:
         path = path.replace("%config", self.Name)
         self.IntermediatePath = path.replace("%type", "obj")
         self.OutputPath = path.replace("%type", "bin")
+    
+    def SetPaths2(self, intermediate, output):
+
+        self.IntermediatePath = intermediate
+        self.OutputPath = output
 
     def UpdateCommandLines(self):
 

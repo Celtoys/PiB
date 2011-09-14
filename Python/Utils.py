@@ -156,7 +156,7 @@ class IncludeScanner:
             print(line)
 
 
-def ExecPibfile(pibfile):
+def ExecPibfile(pibfile, global_symbols = { }):
 
     # Load the build script file
     if not os.path.exists(pibfile):
@@ -196,10 +196,9 @@ env.SaveFileMetadata()
     code_compiled = compile(code, pibfile, "exec")
 
     # Execute the compiled code in an isolated namespace
-    globals = {}
-    exec(prologue_compiled, globals)
-    exec(code_compiled, globals)
-    exec(epilogue_compiled, globals)
+    exec(prologue_compiled, global_symbols)
+    exec(code_compiled, global_symbols)
+    exec(epilogue_compiled, global_symbols)
 
     # Restore initial directory
     os.chdir(cur_dir)
