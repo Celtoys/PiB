@@ -92,8 +92,8 @@ class JDKCompileNode (BuildSystem.Node):
 
     def __init__(self, path):
         
+        super().__init__()
         self.Path = path
-        self.Dependencies = [ ]
     
     def Build(self, env):
         

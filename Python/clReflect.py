@@ -20,6 +20,7 @@ class CppExportNode(BuildSystem.Node):
     
     def __init__(self, path, input, map_file):
         
+        super().__init__()
         self.Path = path
         self.Input = input
         self.MapFile = map_file
@@ -68,6 +69,7 @@ class MergeNode (BuildSystem.Node):
     
     def __init__(self, path, db_files):
 
+        super().__init__()
         self.Path = path
         self.Dependencies = db_files
 
@@ -112,6 +114,7 @@ class CppScanNode (BuildSystem.Node):
 
     def __init__(self, include_paths, cpp_output):
 
+        super().__init__()
         self.IncludePaths = include_paths
         self.CppOutput = cpp_output
         self.Dependencies = [ cpp_output ]

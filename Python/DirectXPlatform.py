@@ -187,9 +187,9 @@ class FXCompileNode (BuildSystem.Node):
 
     def __init__(self, path, profile):
 
+        super().__init__()
         self.Path = path
         self.Profile = profile
-        self.Dependencies = [ ]
 
     def Build(self, env):
 

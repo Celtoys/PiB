@@ -597,8 +597,8 @@ class VCCompileNode (BuildSystem.Node):
 
     def __init__(self, path):
 
+        super().__init__()
         self.Path = path
-        self.Dependencies = [ ]
 
     def Build(self, env):
 
@@ -699,6 +699,7 @@ class VCLinkNode (BuildSystem.Node):
 
     def __init__(self, path, obj_files, lib_files):
 
+        super().__init__()
         self.Path = path
         
         # Object files are explicit dependencies, lib files are implicit, scanned during output
@@ -781,6 +782,7 @@ class VCLibNode (BuildSystem.Node):
 
     def __init__(self, path, dependencies):
 
+        super().__init__()
         self.Path = path
         self.Dependencies = dependencies
 

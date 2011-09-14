@@ -162,7 +162,6 @@ class BuildMetadata:
 class Node:
 
     def __init__(self):
-        # TODO: Need to force derived class to implement this
         self.Dependencies = [ ]
 
     def GetInputFile(self, env):
@@ -182,8 +181,8 @@ class FileNode (Node):
 
     def __init__(self, crc):
 
+        super().__init__()
         self.CRC = crc
-        self.Dependencies = [ ]
 
     def GetInputFile(self, env):
         return env.GetFilename(self.CRC)
@@ -200,6 +199,7 @@ class CopyNode (Node):
 
     def __init__(self, output, source, dest):
 
+        super().__init__()
         self.Dependencies = [ output ]
         self.Source = source
         self.Destination = dest

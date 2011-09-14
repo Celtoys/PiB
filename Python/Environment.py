@@ -184,6 +184,10 @@ class Environment:
 
     def ExecuteNodeBuild(self, node):
 
+        # Don't build the same node more than once
+        if node in self.BuildResults:
+            return self.BuildResults[node]
+
         # Have any of the explicit dependencies changed?
         requires_build = self.ForceBuild
         success = True
@@ -242,6 +246,8 @@ class Environment:
                 if not node.Build(self):
                     success = False
 
+        # Record the build result incase this node is visited again in this build step
+        self.BuildResults[node] = (requires_build, success)
         return (requires_build, success)
     
     def ExecuteNodeClean(self, node):
@@ -270,6 +276,9 @@ class Environment:
             self.CurrentBuildTarget += "PiBDefaultTarget"
         else:
             self.CurrentBuildTarget += target
+
+        # Reset build results on each build
+        self.BuildResults = { }
 
         # Promote to a list if necessary
         if type(build_graphs) != type([]):
