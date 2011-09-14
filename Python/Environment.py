@@ -249,9 +249,13 @@ class Environment:
         for dep in node.Dependencies:
             self.ExecuteNodeClean(dep)
 
-        output_files = node.GetOutputFiles(self)
-        for file in output_files:
-            Utils.RemoveFile(file)
+        # Only clean if there is a build step for this node
+        if Utils.ObjectHasMethod(node, "Build"):
+            output_files = node.GetOutputFiles(self)
+            for file in output_files:
+                if self.Verbose:
+                    print("Deleting: " + file)
+                Utils.RemoveFile(file)
     
     def Build(self, build_graphs, target = None, configs = None):
 
