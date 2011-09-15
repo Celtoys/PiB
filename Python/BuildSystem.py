@@ -192,6 +192,28 @@ class FileNode (Node):
 
 
 #
+# Used to depend on output files from build steps
+# Bound to the environment that generates the output file
+#
+class OutputFileNode (Node):
+
+    def __init__(self, env, node):
+
+        super().__init__()
+        self.Env = env
+        self.GetInputFileFunc = node.GetInputFile
+        self.GetOutputFilesFunc = node.GetOutputFiles
+
+    def GetInputFile(self, env):
+
+        return self.GetInputFileFunc(self.Env)
+
+    def GetOutputFiles(self, env):
+
+        return self.GetOutputFilesFunc(self.Env)
+
+
+#
 # A file copying node that can be placed anywhere in the dependency chain, always
 # returning True on Build
 #

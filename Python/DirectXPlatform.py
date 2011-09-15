@@ -200,9 +200,7 @@ class FXCompileNode (BuildSystem.Node):
         cmdline += [ self.Path, '/T' + self.Profile ]
         cmdline += env.CurrentConfig.FXCompileOptions.CommandLine
         cmdline += self.BuildCommandLine
-        
-        if env.ShowCmdLine:
-            print(cmdline)
+        Utils.ShowCmdLine(env, cmdline)
 
         # Create the include scanner and launch the compiler
         scanner = IncludeScanner(env)

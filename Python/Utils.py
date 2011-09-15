@@ -114,14 +114,36 @@ def Glob(path, pattern):
 # after that argument if it exists. Can return a specified default value if
 # the argument wasn't found.
 #
-def GetSysArgvProperty(name, default=None):
+def GetSysArgvProperty(name, default=None, index=0):
 
-    if name in sys.argv:
-        i = sys.argv.index(name) + 1
-        if i < len(sys.argv):
-            return sys.argv[i]
+    nb_args = len(sys.argv)
+    for i in range(nb_args):
+        arg = sys.argv[i]
+        if arg == name:
+            if i < nb_args - 1 and index == 0:
+                return sys.argv[i + 1]
+            index -= 1
 
     return default
+
+
+#
+# Searches the command-line for the given argument that is repeated,
+# returning the values passed as a list.
+#
+def GetSysArgvProperties(name, default=None):
+
+    props = [ ]
+    index = 0
+
+    while True:
+        prop = GetSysArgvProperty(name, default, index)
+        if prop == default:
+            break
+        props += [ prop ]
+        index += 1
+
+    return props
 
 
 #
@@ -155,6 +177,15 @@ class IncludeScanner:
         elif not self.Env.NoToolOutput:
             print(line)
 
+
+def ShowCmdLine(env, cmdline):
+    
+    if env.ShowCmdLine:
+        print(cmdline)
+        
+        for cmd in cmdline:
+            print(cmd, end=" ")
+        print("")
 
 def ExecPibfile(pibfile, global_symbols = { }):
 

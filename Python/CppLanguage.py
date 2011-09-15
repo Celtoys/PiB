@@ -4,7 +4,7 @@ import Utils
 
 class CppBuild:
     
-    def __init__(self, env, dirs, target, ext_libs = [], libs = [], configs = None, build = True):
+    def __init__(self, env, dirs, target, ext_libs = [], libs = [], build = True):
 
         # Gather source/header files
         self.cpp_files = []
@@ -29,10 +29,8 @@ class CppBuild:
             self.output = self.lib = env.Lib(target, self.obj_files)
 
         # Build all the config command lines
-        if configs == None:
-            configs = env.Configs
-        for config in configs.values():
+        for config in env.Configs.values():
             config.UpdateCommandLines()
 
         if build:
-            env.Build(self.output, target[:-4], configs)
+            env.Build(self.output, target[:-4])

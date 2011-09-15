@@ -609,9 +609,7 @@ class VCCompileNode (BuildSystem.Node):
         if len(output_files) > 1:
             cmdline += [ "/Fd" + output_files[1] ]
         cmdline += [ "/Fo" + output_files[0], self.GetInputFile(env) ]
-
-        if env.ShowCmdLine:
-            print(cmdline)
+        Utils.ShowCmdLine(env, cmdline)
 
         # Create the include scanner and launch the compiler
         scanner = Utils.IncludeScanner(env, "Note: including file:")
@@ -718,9 +716,7 @@ class VCLinkNode (BuildSystem.Node):
             cmdline += [ "/MAP:" + output_files[1] ]
         cmdline += [ dep.GetOutputFiles(env)[0] for dep in self.Dependencies ]
         cmdline += [ dep.GetOutputFiles(env)[0] for dep in self.LibFiles ]
-
-        if env.ShowCmdLine:
-            print(cmdline)
+        Utils.ShowCmdLine(env, cmdline)
 
         # Create the lib scanner and run the link process
         scanner = VCLibScanner(env)
@@ -795,9 +791,7 @@ class VCLibNode (BuildSystem.Node):
         cmdline += [ '/OUT:' + output_files[0] ]
         cmdline.extend(dep.GetOutputFiles(env)[0] for dep in self.Dependencies)
         print("Librarian: " + output_files[0])
-
-        if env.ShowCmdLine:
-            print(cmdline)
+        Utils.ShowCmdLine(env, cmdline)
 
         # Run the librarian process
         process = Process.OpenPiped(cmdline, env.EnvironmentVariables)

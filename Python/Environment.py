@@ -104,7 +104,7 @@ class Environment:
         self.Verbose = "-verbose" in sys.argv
 
         # Parse any build filters in the command-line
-        self.BuildTarget = Utils.GetSysArgvProperty("-target", None)
+        self.BuildTargets = Utils.GetSysArgvProperties("-target", None)
         self.BuildInputFilter = Utils.GetSysArgvProperty("-input_filter", None)
         if self.BuildInputFilter != None:
             self.BuildInputFilter = self.BuildInputFilter.lower()
@@ -113,7 +113,7 @@ class Environment:
         self.Configs = { }
         self.Configs["debug"] = Config("Debug", "debug", MSVCPlatform.VCBaseConfig.DEBUG)
         self.Configs["release"] = Config("Release", "release", MSVCPlatform.VCBaseConfig.RELEASE)
-        self.CurrentConfig = None        
+        self.CurrentConfig = self.Configs[self.ConfigName]
 
         # Load existing file metadata from disk
         self.BuildMetadata = BuildSystem.BuildMetadata.Load()
@@ -124,6 +124,10 @@ class Environment:
         # Always add to the file map
         crc = self.BuildMetadata.AddToFileMap(filename)
         return BuildSystem.FileNode(crc)
+
+    def OutputFile(self, env, node):
+
+        return BuildSystem.OutputFileNode(env, node)
 
     def CPPFile(self, filename):
 
@@ -182,7 +186,15 @@ class Environment:
             if dirname != "":
                 Utils.Makedirs(dirname)
 
-    def ExecuteNodeBuild(self, node):
+    def ExecuteNodeBuild(self, node, tab):
+
+        # Get some info about the input/output files
+        input_filename = node.GetInputFile(self)
+        output_filenames = node.GetOutputFiles(self)
+        input_metadata = self.GetFileMetadata(input_filename)
+
+        if self.Verbose:
+            print(tab + "BUILD NODE: " + input_filename)
 
         # Don't build the same node more than once
         if node in self.BuildResults:
@@ -192,31 +204,28 @@ class Environment:
         requires_build = self.ForceBuild
         success = True
         for dep in node.Dependencies:
-            (a, b) = self.ExecuteNodeBuild(dep)
+            if self.Verbose:
+                print(tab + "   Explicit dependency: " + str(dep))
+            (a, b) = self.ExecuteNodeBuild(dep, tab + "   ")
             requires_build |= a
             success &= b
             if a and self.Verbose:
-                print("Explicit dependency changed: " + str(dep))
-
-        # Get some info about the input/output files
-        input_filename = node.GetInputFile(self)
-        output_filenames = node.GetOutputFiles(self)
-        input_metadata = self.GetFileMetadata(input_filename)
+                print(tab + "      Changed: " + str(dep))
 
         # Have any of the implicit dependencies changed?
         if not requires_build:
             for dep in input_metadata.ImplicitDeps:
-                (a, b) = self.ExecuteNodeBuild(dep)
+                (a, b) = self.ExecuteNodeBuild(dep, tab + "   ")
                 requires_build |= a
                 success &= b
                 if a and self.Verbose:
-                    print("Implicit dependency changed: " + str(dep))
+                    print(tab + "Implicit dependency changed: " + str(dep))
 
         # If the dependencies haven't changed, check to see if the node itself has been changed
         if not requires_build and input_metadata.HasFileChanged(input_filename):
             requires_build = True
             if self.Verbose:
-                print("Input has changed: " + input_filename)
+                print(tab + "Input has changed: " + input_filename + ", " + str(node))
 
         # If any output files don't exist and no build is required, we must build!
         if not requires_build:
@@ -224,7 +233,7 @@ class Environment:
                 if input_filename != output_file and not os.path.exists(output_file):
                     requires_build = True
                     if self.Verbose:
-                        print("Output file doesn't exist: " + output_file)
+                        print(tab + "Output file doesn't exist: " + output_file)
                     break
 
         # At the last minute, cancel any builds if they're excluded by the input filter
@@ -263,12 +272,7 @@ class Environment:
                     print("Deleting: " + file)
                 Utils.RemoveFile(file)
     
-    def Build(self, build_graphs, target = None, configs = None):
-
-        # Apply the current build configuration
-        if configs == None:
-            configs = self.Configs
-        self.CurrentConfig = configs[self.ConfigName]
+    def Build(self, build_graphs, target = None):
 
         # Apply the current build target
         self.CurrentBuildTarget = self.CurrentConfig.Name + ":"
@@ -285,8 +289,8 @@ class Environment:
             build_graphs = [ build_graphs ]
 
         # Exclude targets not mentioned on the command-line, if any
-        if target != None and self.BuildTarget != None:
-            if target != self.BuildTarget:
+        if target != None and len(self.BuildTargets):
+            if target not in self.BuildTargets:
                 return
 
         # Determine a printable target name
@@ -302,11 +306,10 @@ class Environment:
         # Build the graph?
         if "rebuild" in sys.argv or not "clean" in sys.argv:
             print("PiB Building" + target_name + "...")
-            [ self.ExecuteNodeBuild(bg) for bg in build_graphs ]
+            [ self.ExecuteNodeBuild(bg, "") for bg in build_graphs ]
 
         self.BuildMetadata.UpdateModTimes(self.CurrentBuildTarget)
         self.CurrentBuildTarget = None
-        self.CurrentConfig = None
 
 
 if __name__ == '__main__':

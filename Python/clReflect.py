@@ -33,15 +33,12 @@ class CppExportNode(BuildSystem.Node):
         print("clexport: " + os.path.basename(output_file))
 
         # Construct the command-line
-        # TODO: Relocate
         cmdline = [ _MakePath("clexport.exe") ]
         cmdline += [ input_file ]
         cmdline += [ "-cpp", output_file ]
         if self.MapFile != None:
             cmdline += [ "-map", self.MapFile ]
-
-        if env.ShowCmdLine:
-            print(cmdline)
+        Utils.ShowCmdLine(env, cmdline)
 
         # Launch the exporter and wait for it to finish
         process = Process.OpenPiped(cmdline)
@@ -79,13 +76,10 @@ class MergeNode (BuildSystem.Node):
         print("clmerge: " + os.path.basename(output_file))
 
         # Construct the command-line
-        # TODO: Relocate
         cmdline = [ _MakePath("clmerge.exe") ]
         cmdline += [ output_file ]
         cmdline += [ file.GetOutputFiles(env)[0] for file in self.Dependencies ]
-
-        if env.ShowCmdLine:
-            print(cmdline)
+        Utils.ShowCmdLine(env, cmdline)
 
         # Launch the merger and wait for it to finish
         process = Process.OpenPiped(cmdline)
@@ -126,7 +120,6 @@ class CppScanNode (BuildSystem.Node):
         print("clscan: " + os.path.basename(input_file))
 
         # Construct the command-line
-        # TODO: Relocate
         cmdline = [ _MakePath("clscan.exe") ]
         cmdline += [ input_file, "-output_headers" ]
         cmdline += [ "-output", output_files[0] ]
@@ -134,9 +127,7 @@ class CppScanNode (BuildSystem.Node):
         cmdline += [ "-spec_log", output_files[2] ]
         for path in self.IncludePaths:
             cmdline += [ "-i", path ]
-
-        if env.ShowCmdLine:
-            print(cmdline)
+        Utils.ShowCmdLine(env, cmdline)
 
         # Launch the scanner and wait for it to finish
         output = Utils.IncludeScanner(env, "Included:")
