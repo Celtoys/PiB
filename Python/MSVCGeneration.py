@@ -164,6 +164,11 @@ def DoesProjectNeedUpdating(env, vcproj_path, files):
 # Need: input files, configurations and args to run for configurations
 def VCGenerateProjectFile(env, name, files, output, target=None, configs=None, replacements = [ ], pibfile = "pibfile"):
 
+    # Exclude targets not mentioned on the command-line, if any
+    if target != None and len(env.BuildTargets):
+        if target not in env.BuildTargets:
+            return
+
     # Generate file paths
     vcproj_path = name + ".vcproj"
     vcproj_name = os.path.basename(name)
