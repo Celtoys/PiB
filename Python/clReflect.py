@@ -36,6 +36,7 @@ class CppExportNode(BuildSystem.Node):
         cmdline = [ _MakePath("clexport.exe") ]
         cmdline += [ input_file ]
         cmdline += [ "-cpp", output_file ]
+        cmdline += [ "-cpp_log", output_file + ".log" ]
         if self.MapFile != None:
             cmdline += [ "-map", self.MapFile ]
         Utils.ShowCmdLine(env, cmdline)
