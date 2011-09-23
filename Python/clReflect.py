@@ -107,9 +107,10 @@ class MergeNode (BuildSystem.Node):
 
 class CppScanNode (BuildSystem.Node):
 
-    def __init__(self, include_paths, cpp_output):
+    def __init__(self, sys_include_paths, include_paths, cpp_output):
 
         super().__init__()
+        self.SysIncludePaths = sys_include_paths
         self.IncludePaths = include_paths
         self.CppOutput = cpp_output
         self.Dependencies = [ cpp_output ]
@@ -122,10 +123,12 @@ class CppScanNode (BuildSystem.Node):
 
         # Construct the command-line
         cmdline = [ _MakePath("clscan.exe") ]
-        cmdline += [ input_file, "-output_headers" ]
+        cmdline += [ input_file ]
         cmdline += [ "-output", output_files[0] ]
         cmdline += [ "-ast_log", output_files[1] ]
         cmdline += [ "-spec_log", output_files[2] ]
+        for path in self.SysIncludePaths:
+            cmdline += [ "-isystem", path ]
         for path in self.IncludePaths:
             cmdline += [ "-i", path ]
         Utils.ShowCmdLine(env, cmdline)
@@ -152,8 +155,8 @@ class CppScanNode (BuildSystem.Node):
         return self.GetOutputFiles(env)
 
 
-def CppScan(include_paths, cpp_output):
-    return CppScanNode(include_paths, cpp_output)
+def CppScan(sys_include_paths, include_paths, cpp_output):
+    return CppScanNode(sys_include_paths, include_paths, cpp_output)
 
 def Merge(path, db_files):
     return MergeNode(path, db_files)

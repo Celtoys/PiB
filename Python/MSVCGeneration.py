@@ -134,7 +134,7 @@ def DoesProjectNeedUpdating(env, vcproj_path, files):
     src_digest = bytes(src_digest).decode()
 
     # Forced regeneration
-    if "-force_vcfiles" in sys.argv:
+    if "-force_vcfiles" in sys.argv or "-force_vcproj" in sys.argv:
         return src_digest
 
     # Regenerate if it doesn't exist
@@ -301,7 +301,7 @@ def DoesSolutionNeedUpdating(env, sln_path, projects):
     src_digest = bytes(src_digest).decode()
 
     # Forced regeneration
-    if "-force_vcfiles" in sys.argv:
+    if "-force_vcfiles" in sys.argv or "-force_vcsln" in sys.argv:
         return src_digest
 
     # Regenerate if it doesn't exist
