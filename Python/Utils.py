@@ -203,6 +203,8 @@ def ExecPibfile(pibfile, global_symbols = { }):
     if pibfile_dir != "":
         os.chdir(pibfile_dir)
 
+    global_symbols["__file__"] = os.path.realpath(pibfile)
+
     # Compile the environment initialisation code
     prologue = """
 from BuildSystem import *
