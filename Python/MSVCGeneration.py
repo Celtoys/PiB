@@ -183,10 +183,10 @@ def VCGenerateProjectFile(env, name, files, output, target=None, configs=None, r
         return
 
     # Ensure the paths are normalised for stable hashing
-    files = [ os.path.normcase(os.path.normpath(file)) for file in files]
+    input_files = [ os.path.normcase(os.path.normpath(file)) for file in files]
 
     # Does the vcproj need to be regenerated?
-    digest = DoesProjectNeedUpdating(env, vcproj_path, files)
+    digest = DoesProjectNeedUpdating(env, vcproj_path, input_files)
     if digest == None:
         return vcproj_guid
 
