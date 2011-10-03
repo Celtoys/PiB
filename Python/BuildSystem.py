@@ -83,9 +83,10 @@ class BuildMetadata:
     
     def __init__(self):
 
-        self.Version = 1
+        self.Version = 2
         self.FileMap = { }
         self.FileMetadata = { }
+        self.UserData = None
     
     def Save(self):
 
@@ -101,7 +102,7 @@ class BuildMetadata:
                     data = pickle.load(f)
 
                     # Return if the version matches
-                    if hasattr(data, "Version") and data.Version == 1:
+                    if hasattr(data, "Version") and data.Version == 2:
                         return data
 
                     print("Metadata file version out of date, discarding...")

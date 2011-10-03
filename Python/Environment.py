@@ -78,10 +78,16 @@ class Environment:
 
     def New():
 
-        # Can the default build environment be initialised?
-        envvars = MSVCPlatform.GetVisualCEnv()
-        if envvars == None:
-            return None
+        # Load the metadata first as that encodes as much of the cached environment state as possible
+        metadata = BuildSystem.BuildMetadata.Load()
+
+        # Check to see if the MSVC envvars are in the metadata before figuring them out,
+        # as that's quite an expensive operation
+        if metadata.UserData == None:
+            envvars = MSVCPlatform.GetVisualCEnv()
+            if envvars == None:
+                return None
+            metadata.UserData = envvars
 
         # Add the JDK
         # TODO: Need to decide whether all environments need to be present, PiB is fault-tolerant or
@@ -89,9 +95,9 @@ class Environment:
         # TODO: This envvar modification needs to be done dynamically when the JDK is requested
         #envvars["PATH"] += ";" + JDKPlatform.GetJDKBinPath()
         
-        return Environment(envvars)
+        return Environment(metadata.UserData, metadata)
 
-    def __init__(self, envvars):
+    def __init__(self, envvars, metadata):
 
         # Construc the environment variables
         self.EnvironmentVariables = envvars
@@ -116,7 +122,7 @@ class Environment:
         self.CurrentConfig = self.Configs[self.ConfigName]
 
         # Load existing file metadata from disk
-        self.BuildMetadata = BuildSystem.BuildMetadata.Load()
+        self.BuildMetadata = metadata
         self.CurrentBuildTarget = None
 
     def NewFile(self, filename):

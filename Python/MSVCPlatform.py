@@ -103,12 +103,12 @@ def GetVisualCEnv():
     for line in output:
         var, value = line.split("=")
         env[var.upper()] = value
-    
+
     # This environment variable is defined in the VS2005 IDE and prevents cl.exe output
     # being correctly captured, so remove it!
     if "VS_UNICODE_OUTPUT" in env:
         del env["VS_UNICODE_OUTPUT"]
-    
+
     return env
 
 
