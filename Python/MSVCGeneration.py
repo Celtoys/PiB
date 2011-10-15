@@ -162,11 +162,16 @@ def DoesProjectNeedUpdating(env, vcproj_path, files):
 
 
 # Need: input files, configurations and args to run for configurations
-def VCGenerateProjectFile(env, name, files, output, target=None, configs=None, replacements = [ ], pibfile = "pibfile"):
+def VCGenerateProjectFile(env, name, files, output, targets=None, configs=None, replacements = [ ], pibfile = "pibfile"):
 
+    # Promote target to a list
+    if targets != None and type(targets) != type([]):
+        targets = [ targets ]
+    
     # Exclude targets not mentioned on the command-line, if any
-    if target != None and len(env.BuildTargets):
-        if target not in env.BuildTargets:
+    if targets != None and len(env.BuildTargets):
+        valid_targets = set(targets).intersection(env.BuildTargets)
+        if len(valid_targets) == 0:
             return
 
     # Generate file paths
@@ -184,6 +189,8 @@ def VCGenerateProjectFile(env, name, files, output, target=None, configs=None, r
 
     # Ensure the paths are normalised for stable hashing
     input_files = [ os.path.normcase(os.path.normpath(file)) for file in files]
+    if targets != None:
+        input_files += targets
 
     # Does the vcproj need to be regenerated?
     digest = DoesProjectNeedUpdating(env, vcproj_path, input_files)
@@ -207,8 +214,9 @@ def VCGenerateProjectFile(env, name, files, output, target=None, configs=None, r
 
     # Construct target specification command-line option
     target_opt = ""
-    if target != None:
-        target_opt = " -target " + target
+    if targets != None:
+        for target in targets:
+            target_opt += " -target " + target
 
     f = open(vcproj_path, "w")
 

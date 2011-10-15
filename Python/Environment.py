@@ -244,7 +244,8 @@ class Environment:
 
         # At the last minute, cancel any builds if they're excluded by the input filter
         if requires_build and self.BuildInputFilter != None:
-            if self.BuildInputFilter not in input_filename.lower():
+            input_filename = os.path.realpath(input_filename).lower()
+            if self.BuildInputFilter not in input_filename:
                 requires_build = False
 
         # Execute any build steps
