@@ -24,7 +24,7 @@
 # ------------------------------------------------------------------------------
 #
 # MSVCGeneration.py: Automatic, dependency-based generation of Visual Studio C++
-# 2005 Projects and Solutions
+# 2005/2008 Projects and Solutions
 #
 
 import os
@@ -35,21 +35,52 @@ import sys
 import Utils
 
 
-vcproj_header = """<VisualStudioProject
-	ProjectType="Visual C++"
-	Version="8.00"
-	Name="%NAME%"
-	ProjectGUID="{%GUID%}"
-	RootNamespace="%NAME%"
-	Keyword="Win32Proj"
-	>
-	<Platforms>
-		<Platform
-			Name="Win32"
-		/>
-	</Platforms>
-	<ToolFiles>
-	</ToolFiles>"""
+class MSVCGeneration2005:
+    VisualStudio = "2005"
+    Solution = "9.00"
+    Project = "8.00"
+
+class MSVCGeneration2008:
+    VisualStudio = "2008"
+    Solution = "10.00"
+    Project = "9.00"
+
+
+def SolutionHeader():
+    
+    # Determine the current version using the exact same logic that drives the compilation
+    version = MSVCGeneration2005
+    if os.getenv("VS90COMNTOOLS"):
+        version = MSVCGeneration2008
+        
+    header = """Microsoft Visual Studio Solution File, Format Version {0}
+# Visual Studio {1}"""
+    header = header.format(version.Solution, version.VisualStudio)
+    return header
+
+def ProjectHeader():
+    # Determine the current version using the exact same logic that drives the compilation
+    version = MSVCGeneration2005
+    if os.getenv("VS90COMNTOOLS"):
+        version = MSVCGeneration2008
+        
+    header = """<VisualStudioProject
+    ProjectType="Visual C++"
+    Version="{0}"
+    Name="%NAME%"
+    ProjectGUID="{%GUID%}"
+    RootNamespace="%NAME%"
+    Keyword="Win32Proj"
+    >
+    <Platforms>
+        <Platform
+            Name="Win32"
+        />
+    </Platforms>
+    <ToolFiles>
+    </ToolFiles>"""
+    header = header.replace("{0}", version.Project)
+    return header
 
 
 vcproj_config = """		<Configuration
@@ -223,6 +254,7 @@ def VCGenerateProjectFile(env, name, files, output, targets=None, configs=None, 
     print('<?xml version="1.0" encoding="Windows-1252"?>', file=f)
 
     # Generate the header
+    vcproj_header = ProjectHeader()
     header_xml = vcproj_header.replace("%NAME%", vcproj_name)
     header_xml = header_xml.replace("%GUID%", vcproj_guid)
     print(header_xml, file=f)
@@ -372,8 +404,8 @@ def VCGenerateSolutionFile(env, name, projects):
 
     f = open(sln_path, "w")
 
-    print("Microsoft Visual Studio Solution File, Format Version 9.00", file=f)
-    print("# Visual Studio 2005", file=f)
+    sln_header = SolutionHeader()
+    print(sln_header, file=f)
 
     # Write the project summary
     guids = { }

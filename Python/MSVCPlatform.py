@@ -24,7 +24,7 @@
 # ------------------------------------------------------------------------------
 #
 # MSVCPlatform.py: Command-line parameter abstraction and build nodes for
-# Microsoft Visual C++ 2005.
+# Microsoft Visual C++ 2005/2008/2010.
 #
 # C/C++ Building Reference (2005):
 # http://msdn.microsoft.com/en-us/library/91621w01(v=VS.80).aspx
@@ -66,6 +66,8 @@ def GetVisualCEnv():
 
     # Locate the Visual Studio tools path
     vs_tools_dir = os.getenv("VS80COMNTOOLS")
+    if vs_tools_dir == None:
+        vs_tools_dir = os.getenv("VS90COMNTOOLS")
     if vs_tools_dir == None:
         vs_tools_dir = os.getenv("VS100COMNTOOLS")
     if vs_tools_dir == None:
