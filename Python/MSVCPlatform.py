@@ -52,6 +52,38 @@ import Process
 import BuildSystem
 
 
+# Locate the Visual Studio tools path using the environment
+VSToolsDir = os.getenv("VS80COMNTOOLS")
+if VSToolsDir == None:
+    VSToolsDir = os.getenv("VS90COMNTOOLS")
+if VSToolsDir == None:
+    VSToolsDir = os.getenv("VS100COMNTOOLS")
+   
+# Locate the Visual Studio install path    
+VSInstallDir = VSToolsDir
+while VSInstallDir != None and VSInstallDir != "":
+    split_path = os.path.split(VSInstallDir)
+
+    # Detect infinite loop
+    if VSInstallDir == split_path[0]:
+        print("ERROR: Visual Studio Tools path is not formatted as expected")
+        VSInstallDir = None
+        break
+
+    VSInstallDir = split_path[0]
+    if split_path[1] == "Common7":
+        break
+
+# VC directories are a subdirectory of VS install
+VCInstallDir = None
+VCIncludeDir = None
+PlatformSDKIncludeDir = None
+if VSInstallDir != None:
+    VCInstallDir = os.path.join(VSInstallDir, "VC")
+    VCIncludeDir = os.path.join(VSInstallDir, "VC/include")
+    PlatformSDKIncludeDir = os.path.join(VSInstallDir, "VC/PlatformSDK/include")
+
+
 #
 # There is no direct way in Python to apply the environment of one subprocess to another. The typical solution is
 # to generate a batch file at runtime that does the following:
@@ -63,33 +95,13 @@ import BuildSystem
 # resulting environment for use later when calling cl.exe.
 #
 def GetVisualCEnv():
-
-    # Locate the Visual Studio tools path
-    vs_tools_dir = os.getenv("VS80COMNTOOLS")
-    if vs_tools_dir == None:
-        vs_tools_dir = os.getenv("VS90COMNTOOLS")
-    if vs_tools_dir == None:
-        vs_tools_dir = os.getenv("VS100COMNTOOLS")
-    if vs_tools_dir == None:
-        print("ERROR: Couldn't locate Visual Studio Tools environment variable")
+    
+    if VSInstallDir == None:
+        print("ERROR: Visual Studio install directory not detected")
         return None
 
-    # Locate the Visual Studio install path    
-    vs_dir = vs_tools_dir
-    while vs_dir != "":
-        split_path = os.path.split(vs_dir)
-
-        # Detect infinite loop
-        if vs_dir == split_path[0]:
-            print("ERROR: Visual Studio Tools path is not formatted as expected")
-            return None
-
-        vs_dir = split_path[0]
-        if split_path[1] == "Common7":
-            break
-
     # Locate the batch file that sets up the Visual C build environment
-    vcvars_bat = os.path.join(vs_dir, "VC/vcvarsall.bat")
+    vcvars_bat = os.path.join(VSInstallDir, "VC/vcvarsall.bat")
     if not os.path.exists(vcvars_bat):
         print("ERROR: Visual C environment setup batch file not found")
         return None
