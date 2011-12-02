@@ -115,8 +115,11 @@ def GetVisualCEnv():
     # Start with the current environment, override with any parsed environment values
     env = os.environ.copy()
     for line in output:
-        var, value = line.split("=")
-        env[var.upper()] = value
+        try:
+            var, value = line.split("=")
+            env[var.upper()] = value
+        except:
+            print("WARNING: environment variables skipped -> " + line)
 
     # This environment variable is defined in the VS2005 IDE and prevents cl.exe output
     # being correctly captured, so remove it!
