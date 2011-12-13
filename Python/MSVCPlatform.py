@@ -629,7 +629,7 @@ class VCCompileNode (BuildSystem.Node):
         Utils.ShowCmdLine(env, cmdline)
 
         # Create the include scanner and launch the compiler
-        scanner = Utils.IncludeScanner(env, "Note: including file:")
+        scanner = Utils.IncludeScanner(env, "Note: including file:", None, lambda line, length: line[length:].lstrip())
         process = Process.OpenPiped(cmdline, env.EnvironmentVariables)
         Process.PollPipeOutput(process, scanner)
 
@@ -669,45 +669,6 @@ class VCCompileNode (BuildSystem.Node):
 
 
 #
-# This reads each line of output from cl.exe and decides whether to print it or not.
-# If the line reports what file is being included by the .c/.cpp file then it's not printed
-# and instead stored locally so that it can report all the files included.
-#
-class VCLibScanner:
-
-    Start = "Searching libraries"
-    End = "Finished searching libraries"
-    Prefix = "    Searching "
-
-    def __init__(self, env):
-
-        self.LibsAdded = { }
-        self.Libs = [ ]
-        self.Env = env
-
-    def __call__(self, line):
-
-        if line == "":
-            return
-
-        # Strip newline
-        line = line.strip("\r\n")
-
-        # Skip lines with known prefixes used to gather libraries
-        if line.startswith(self.Start) or line.startswith(self.End):
-            return
-
-        # Gather library dependencies or print the line
-        if line.startswith(self.Prefix):
-            lib = line[len(self.Prefix):-1]
-            if lib not in self.LibsAdded:
-                self.Libs += [ self.Env.NewFile(lib) ]
-                self.LibsAdded[lib] = True
-        else:
-            print(line)
-
-
-#
 # A node for linking an EXE or DLL given an output path and list of dependencies
 #
 class VCLinkNode (BuildSystem.Node):
@@ -736,13 +697,13 @@ class VCLinkNode (BuildSystem.Node):
         Utils.ShowCmdLine(env, cmdline)
 
         # Create the lib scanner and run the link process
-        scanner = VCLibScanner(env)
+        scanner = Utils.IncludeScanner(env, "    Searching ", [ "Searching libraries", "Finished searching libraries" ], lambda line, length: line[length:-1])
         process = Process.OpenPiped(cmdline, env.EnvironmentVariables)
         Process.PollPipeOutput(process, scanner)
 
         # Record the implicit dependencies for this file
         data = env.GetFileMetadata(self.GetInputFile(env))
-        data.SetImplicitDeps(env, scanner.Libs)
+        data.SetImplicitDeps(env, scanner.Includes)
 
         return process.returncode == 0
 

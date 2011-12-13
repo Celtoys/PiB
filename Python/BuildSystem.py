@@ -63,11 +63,14 @@ class FileMetadata:
 
     def SetImplicitDeps(self, env, deps):
 
-        # Ensure each implicit dependency has a metadata entry
-        for dep in deps:
-            env.GetFileMetadata(dep.GetInputFile(env))
+        # Create file nodes for each dependency
+        self.ImplicitDeps = [ ]
+        for filename in deps:
+            filenode = env.NewFile(filename)
 
-        self.ImplicitDeps = deps
+            # Ensure each dependency has a metadata entry
+            env.GetFileMetadata(filename)
+            self.ImplicitDeps.append(filenode)
 
     def __repr__(self):
 

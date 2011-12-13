@@ -155,11 +155,13 @@ def GetSysArgvProperties(name, default=None):
 #
 class IncludeScanner:
 
-    def __init__(self, env, prefix):
+    def __init__(self, env, prefix, ignore_prefixes, parser):
 
-        self.Includes = [ ]
+        self.Includes = set()
         self.Env = env
         self.Prefix = prefix
+        self.IgnorePrefixes = ignore_prefixes
+        self.Parser = parser
 
     def __call__(self, line):
 
@@ -171,11 +173,27 @@ class IncludeScanner:
 
         # Scan for included files and add to the list
         if line.startswith(self.Prefix):
-            path = line[len(self.Prefix):].lstrip()
-            self.Includes.append(self.Env.NewFile(path))
+            #path = line[len(self.Prefix):self.StripOffset].lstrip()
+            path = self.Parser(line, len(self.Prefix))
+            path = NormalisePath(path)
+            self.Includes.add(path)
+            #self.Includes.add(self.Env.NewFile(path))
+            #self.Includes.append(self.Env.NewFile(path))
+
+        elif self.IgnoreLine(line):
+            return
 
         elif not self.Env.NoToolOutput:
             print(line)
+    
+    def IgnoreLine(self, line):
+
+        if self.IgnorePrefixes:
+            for prefix in self.IgnorePrefixes:
+                if line.startswith(prefix):
+                    return True
+
+        return False
 
 
 def ShowCmdLine(env, cmdline):

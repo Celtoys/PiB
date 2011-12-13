@@ -134,7 +134,7 @@ class CppScanNode (BuildSystem.Node):
         Utils.ShowCmdLine(env, cmdline)
 
         # Launch the scanner and wait for it to finish
-        output = Utils.IncludeScanner(env, "Included:")
+        output = Utils.IncludeScanner(env, "Included:", None, lambda line, length: line[length:].lstrip())
         process = Process.OpenPiped(cmdline)
         Process.WaitForPipeOutput(process, output)
 

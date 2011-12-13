@@ -150,39 +150,6 @@ class FXCompileOptions:
         self.CommandLine = cmdline
 
 
-class IncludeScanner:
-
-    IgnoreLine0 = "Opening file ["
-    IgnoreLine1 = "Current working dir ["
-
-    HeaderPrefix = "Resolved to ["
-
-    def __init__(self, env):
-
-        self.Includes = [ ]
-        self.Env = env
-
-    def __call__(self, line):
-
-        if line == "":
-            return
-
-        # Strip newline
-        line = line.strip("\r\n")
-
-        # Scan for included files and add to the list
-        if line.startswith(self.HeaderPrefix):
-            path = line[len(self.HeaderPrefix):-1]
-            self.Includes.append(self.Env.NewFile(path))
-
-        # Skip lines that are output during the header info stage
-        elif line.startswith(self.IgnoreLine0) or line.startswith(self.IgnoreLine1):
-            return
-
-        elif not self.Env.NoToolOutput:
-            print(line)
-
-
 class FXCompileNode (BuildSystem.Node):
 
     def __init__(self, path, profile):
@@ -203,7 +170,7 @@ class FXCompileNode (BuildSystem.Node):
         Utils.ShowCmdLine(env, cmdline)
 
         # Create the include scanner and launch the compiler
-        scanner = IncludeScanner(env)
+        scanner = Utils.IncludeScanner(env, "Resolved to [", [ "Opening file [", "Current working dir [" ], lambda line, length: line[length:].lstrip())
         process = Process.OpenPiped(cmdline, env.EnvironmentVariables)
         Process.WaitForPipeOutput(process, scanner)
 
