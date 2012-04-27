@@ -153,7 +153,7 @@ def WriteProjectFiles(f, tab, name, entries):
         print(tab[:-1] + "</Filter>", file=f)
 
 
-def DoesProjectNeedUpdating(env, vcproj_path, files):
+def DoesProjectNeedUpdating(vcproj_path, files):
 
     # Hash all the inputs
     md5 = hashlib.md5()
@@ -224,7 +224,7 @@ def VCGenerateProjectFile(env, name, files, output, targets=None, configs=None, 
         input_files += targets
 
     # Does the vcproj need to be regenerated?
-    digest = DoesProjectNeedUpdating(env, vcproj_path, input_files)
+    digest = DoesProjectNeedUpdating(vcproj_path, input_files)
     if digest == None:
         return vcproj_guid
 
@@ -331,7 +331,7 @@ def VCGenerateProjectFile(env, name, files, output, targets=None, configs=None, 
     f.close()
 
 
-def DoesSolutionNeedUpdating(env, sln_path, projects):
+def DoesSolutionNeedUpdating(sln_path, projects):
 
     # Hash all the inputs
     # TODO: Output filename
@@ -396,7 +396,7 @@ def VCGenerateSolutionFile(env, name, projects):
         return
 
     # Does the sln file need to be generated?
-    digest = DoesSolutionNeedUpdating(env, sln_path, projects)
+    digest = DoesSolutionNeedUpdating(sln_path, projects)
     if digest == None:
         return
 
@@ -414,6 +414,9 @@ def VCGenerateSolutionFile(env, name, projects):
         vcproj_path = os.path.normpath(name + ".vcproj")
         vcproj_name = os.path.basename(name)
         guids[name] = ReadProjectGUID(vcproj_path)
+
+        # Need the vcproj path relative to the solution for Visual Studio
+        vcproj_path = os.path.relpath(vcproj_path, os.path.dirname(sln_path))
         print('Project("{' + str(uuid.uuid1()).upper() + '}") = "' + vcproj_name + '", "' + vcproj_path + '", "' + guids[name] + '"', file=f)
 
         # Ensure the Solution build order matches the order in which projects were passed
