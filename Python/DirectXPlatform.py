@@ -170,7 +170,7 @@ class FXCompileNode (BuildSystem.Node):
         Utils.ShowCmdLine(env, cmdline)
 
         # Create the include scanner and launch the compiler
-        scanner = Utils.IncludeScanner(env, "Resolved to [", [ "Opening file [", "Current working dir [" ], lambda line, length: line[length:].lstrip())
+        scanner = Utils.IncludeScanner(env, "Resolved to [", [ "Opening file [", "Current working dir [" ], lambda line, length: line[length:-1].lstrip())
         process = Process.OpenPiped(cmdline, env.EnvironmentVariables)
         Process.WaitForPipeOutput(process, scanner)
 
