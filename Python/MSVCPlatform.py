@@ -53,12 +53,14 @@ import BuildSystem
 
 
 # Locate the Visual Studio tools path using the environment
-VSToolsDir = os.getenv("VS80COMNTOOLS")
+VSToolsDir = os.getenv("VS100COMNTOOLS")
 if VSToolsDir == None:
     VSToolsDir = os.getenv("VS90COMNTOOLS")
 if VSToolsDir == None:
-    VSToolsDir = os.getenv("VS100COMNTOOLS")
-   
+    VSToolsDir = os.getenv("VS80COMNTOOLS")
+
+
+
 # Locate the Visual Studio install path    
 VSInstallDir = VSToolsDir
 while VSInstallDir != None and VSInstallDir != "":
@@ -73,6 +75,7 @@ while VSInstallDir != None and VSInstallDir != "":
     VSInstallDir = split_path[0]
     if split_path[1] == "Common7":
         break
+
 
 # VC directories are a subdirectory of VS install
 VCInstallDir = None
@@ -656,10 +659,10 @@ class VCCompileNode (BuildSystem.Node):
             # The best we can do here is ensure that the obj\src directory for
             # a group of files shares the same pdb/idb
             path = os.path.dirname(path)
-            files += [ os.path.join(path, "vc80.pdb") ]
+            files += [ os.path.join(path, "vc100.pdb") ]
 
             if env.CurrentConfig.CPPOptions.DebuggingInfo == VCDebuggingInfo.PDBEDITANDCONTINUE:
-                files += [ os.path.join(path, "vc80.idb") ]
+                files += [ os.path.join(path, "vc100.idb") ]
 
         return files
 
