@@ -141,22 +141,30 @@ class FXCompileOptions:
         if self.HeaderVariableName: cmdline += [ '/Vn' + self.HeaderVariableName ]
         if self.InstructionNumbers: cmdline += [ '/Ni' ]
 
-        for define in self.Defines:
-            cmdline += [ '/D' + str(define[0]) + '=' + str(define[1])]
+        cmdline += FXCompileOptions.FormatDefines(self.Defines)
 
         if self.NoLogo:
             cmdline += [ '/nologo' ]
 
         self.CommandLine = cmdline
 
+    def FormatDefines(defines):
+
+        cmdline = [ ]
+        for define in defines:
+            cmdline += [ '/D' + str(define[0]) + '=' + str(define[1])]
+        return cmdline
+
 
 class FXCompileNode (BuildSystem.Node):
 
-    def __init__(self, path, profile):
+    def __init__(self, path, profile, path_postfix = "", defines = [ ]):
 
         super().__init__()
         self.Path = path
         self.Profile = profile
+        self.PathPostfix = path_postfix
+        self.DefineCmdLine = FXCompileOptions.FormatDefines(defines)
 
     def Build(self, env):
 
@@ -166,6 +174,7 @@ class FXCompileNode (BuildSystem.Node):
         cmdline = [ os.path.join(x86BinDir, "fxc.exe") ]
         cmdline += [ self.Path, '/T' + self.Profile ]
         cmdline += env.CurrentConfig.FXCompileOptions.CommandLine
+        cmdline += self.DefineCmdLine
         cmdline += self.BuildCommandLine
         Utils.ShowCmdLine(env, cmdline)
 
@@ -194,6 +203,7 @@ class FXCompileNode (BuildSystem.Node):
         # Get the relocated path minus extension
         path = os.path.splitext(self.Path)[0]
         path = os.path.join(env.CurrentConfig.OutputPath, path)
+        path += self.PathPostfix
         
         # Start a local command-line for use by Build
         self.BuildCommandLine = [ ]
