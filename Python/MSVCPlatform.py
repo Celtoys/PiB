@@ -279,6 +279,7 @@ class VCCompileOptions:
         self.IncludePaths = [ ]
         self.ReportClassLayout = False
         self.ReportSingleClassLayout = [ ]
+        self.FullPathnameReports = True
         self.UpdateCommandLine()
 
     def InitRelease(self):
@@ -360,6 +361,9 @@ class VCCompileOptions:
         
         for cls in self.ReportSingleClassLayout:
             cmdline += [ '/d1reportSingleClassLayout' + cls ]
+
+        if self.FullPathnameReports:
+            cmdline += [ '/FC' ]
 
         self.CommandLine = cmdline
 
