@@ -26,7 +26,7 @@ class CppBuild:
         elif target.endswith(".dll"):
             self.output = self.dll = env.Link(target, self.obj_files, self.lib_files + libs)
         elif target.endswith(".lib"):
-            self.output = self.lib = env.Lib(target, self.obj_files)
+            self.output = self.lib = env.Lib(target, self.obj_files, self.lib_files + libs)
 
         # Build all the config command lines
         for config in env.Configs.values():

@@ -446,6 +446,7 @@ class VCLinkOptions:
     def InitDebug(self):
 
         # Default settings for all linker options
+        self.SafeSEH = False
         self.Debug = True
         self.NoLogo = True
         self.DLL = False
@@ -482,6 +483,9 @@ class VCLinkOptions:
             '/VERBOSE:LIB'          # Show libs searched for dependency evaluation
         ]
 
+        if self.SafeSEH:
+            cmdline += [ "/SAFESEH" ]
+        
         if self.Debug:
             cmdline += [ "/DEBUG" ]
 
@@ -761,11 +765,14 @@ class VCLinkNode (BuildSystem.Node):
 #
 class VCLibNode (BuildSystem.Node):
 
-    def __init__(self, path, dependencies):
+    def __init__(self, path, dependencies, lib_files):
 
         super().__init__()
         self.Path = path
+
+        # Object files are explicit dependencies, lib files are implicit, scanned during output
         self.Dependencies = dependencies
+        self.LibFiles = lib_files
 
     def Build(self, env):
 
@@ -774,7 +781,8 @@ class VCLibNode (BuildSystem.Node):
         # Construct the command-line
         cmdline = [ "lib.exe" ] + env.CurrentConfig.LibOptions.CommandLine
         cmdline += [ '/OUT:' + output_files[0] ]
-        cmdline.extend(dep.GetOutputFiles(env)[0] for dep in self.Dependencies)
+        cmdline += [ dep.GetOutputFiles(env)[0] for dep in self.Dependencies ]
+        cmdline += [ dep.GetOutputFiles(env)[0] for dep in self.LibFiles ]
         print("Librarian: " + output_files[0])
         Utils.ShowCmdLine(env, cmdline)
 

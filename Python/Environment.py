@@ -143,9 +143,9 @@ class Environment:
 
         return MSVCPlatform.VCLinkNode(filename, obj_files, lib_files)
 
-    def Lib(self, filename, dependencies):
+    def Lib(self, filename, dependencies, lib_files = []):
 
-        return MSVCPlatform.VCLibNode(filename, dependencies)
+        return MSVCPlatform.VCLibNode(filename, dependencies, lib_files)
     
     def JavaFile(self, filename):
         
