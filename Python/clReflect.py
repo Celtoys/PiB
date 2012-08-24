@@ -24,7 +24,7 @@ class CppExportNode(BuildSystem.Node):
         self.Path = path
         self.Input = input
         self.MapFile = map_file
-        self.Dependencies = [ input ]
+        self.Dependencies = [ input, map_file ]
 
     def Build(self, env):
         
@@ -38,7 +38,7 @@ class CppExportNode(BuildSystem.Node):
         cmdline += [ "-cpp", output_file ]
         cmdline += [ "-cpp_log", output_file + ".log" ]
         if self.MapFile != None:
-            cmdline += [ "-map", self.MapFile ]
+            cmdline += [ "-map", self.MapFile.GetOutputFiles(env)[0] ]
         Utils.ShowCmdLine(env, cmdline)
 
         # Launch the exporter and wait for it to finish
