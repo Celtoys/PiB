@@ -65,11 +65,12 @@ class CppExportNode(BuildSystem.Node):
 
 class MergeNode (BuildSystem.Node):
     
-    def __init__(self, path, db_files):
+    def __init__(self, path, db_files, cpp_codegen):
 
         super().__init__()
         self.Path = path
         self.Dependencies = db_files
+        self.CppCodeGen = cpp_codegen
 
     def Build(self, env):
 
@@ -79,6 +80,8 @@ class MergeNode (BuildSystem.Node):
         # Construct the command-line
         cmdline = [ _MakePath("clmerge.exe") ]
         cmdline += [ output_file ]
+        if self.CppCodeGen != None:
+            cmdline += [ "-cpp_codegen", self.CppCodeGen.GetInputFile(env) ]
         cmdline += [ file.GetOutputFiles(env)[0] for file in self.Dependencies ]
         Utils.ShowCmdLine(env, cmdline)
 
@@ -98,11 +101,13 @@ class MergeNode (BuildSystem.Node):
     def GetOutputFiles(self, env):
 
         path = os.path.join(env.CurrentConfig.IntermediatePath, self.Path)
-        return [ path ]
+        return [ path, self.CppCodeGen.GetInputFile(env) ]
 
     def GetTempOutputFiles(self, env):
 
-        return self.GetOutputFiles(env)
+        # Exclude the output C++ file as we don't want that to be deleted
+        path = os.path.join(env.CurrentConfig.IntermediatePath, self.Path)
+        return [ path ]
 
 
 class CppScanNode (BuildSystem.Node):
@@ -158,8 +163,8 @@ class CppScanNode (BuildSystem.Node):
 def CppScan(sys_include_paths, include_paths, cpp_output):
     return CppScanNode(sys_include_paths, include_paths, cpp_output)
 
-def Merge(path, db_files):
-    return MergeNode(path, db_files)
+def Merge(path, db_files, cpp_codegen):
+    return MergeNode(path, db_files, cpp_codegen)
 
 def CppExport(path, input, map_file):
     return CppExportNode(path, input, map_file)
