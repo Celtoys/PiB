@@ -100,14 +100,16 @@ class MergeNode (BuildSystem.Node):
 
     def GetOutputFiles(self, env):
 
-        path = os.path.join(env.CurrentConfig.IntermediatePath, self.Path)
-        return [ path, self.CppCodeGen.GetInputFile(env) ]
+        output_files = [ os.path.join(env.CurrentConfig.IntermediatePath, self.Path) ]
+        if self.CppCodeGen != None:
+            output_files += [ self.CppCodeGen.GetInputFile(env) ]
+        return output_files
 
     def GetTempOutputFiles(self, env):
 
         # Exclude the output C++ file as we don't want that to be deleted
-        path = os.path.join(env.CurrentConfig.IntermediatePath, self.Path)
-        return [ path ]
+        temp_files = self.GetOutputFiles(env)[:1]
+        return temp_files
 
 
 class CppScanNode (BuildSystem.Node):
