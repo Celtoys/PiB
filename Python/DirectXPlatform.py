@@ -115,11 +115,10 @@ class FXCompileOptions:
             '/Vi'
         ]
     
-        if self.EntryPoint: cmdline += [ ('/E' + self.EntryPoint) ]
-
         cmdline += [ '/I' + path for path in self.IncludePaths ]
 
-        if self.DisableOptimisations: cmdline += [ '/Od' ]
+        if self.DisableOptimisations:
+            cmdline += [ '/Od' ]
 
         cmdline += [ '/O' + str(self.OptimisationLevel) ]
 
@@ -158,17 +157,23 @@ class FXCompileOptions:
 
 class FXCompileNode (BuildSystem.Node):
 
-    def __init__(self, path, profile, path_postfix = "", defines = [ ]):
+    def __init__(self, path, profile, path_postfix = "", defines = [ ], entry_point = None):
 
         super().__init__()
         self.Path = path
         self.Profile = profile
         self.PathPostfix = path_postfix
         self.DefineCmdLine = FXCompileOptions.FormatDefines(defines)
+        self.EntryPoint = entry_point
 
     def Build(self, env):
 
         output_files = self.GetOutputFiles(env)
+
+        # Node entry point takes precendence over config specified entry-point
+        entry_point = self.EntryPoint
+        if entry_point == None:
+            entry_point = env.CurrentConfig.FXCompileOptions.EntryPoint
 
         # Build command line
         cmdline = [ os.path.join(x86BinDir, "fxc.exe") ]
@@ -176,6 +181,8 @@ class FXCompileNode (BuildSystem.Node):
         cmdline += env.CurrentConfig.FXCompileOptions.CommandLine
         cmdline += self.DefineCmdLine
         cmdline += self.BuildCommandLine
+        if entry_point:
+            cmdline += [ '/E' + entry_point ]
         Utils.ShowCmdLine(env, cmdline)
 
         # Create the include scanner and launch the compiler
