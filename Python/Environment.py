@@ -135,9 +135,9 @@ class Environment:
 
         return BuildSystem.OutputFileNode(env, node)
 
-    def CPPFile(self, filename):
+    def CPPFile(self, filename, override_cpp_opts = None):
 
-        return MSVCPlatform.VCCompileNode(filename)
+        return MSVCPlatform.VCCompileNode(filename, override_cpp_opts)
 
     def Link(self, filename, obj_files, lib_files = []):
 

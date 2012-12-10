@@ -34,3 +34,12 @@ class CppBuild:
 
         if build:
             env.Build(self.output, target[:-4])
+
+
+    def OverrideCPPOptions(self, cpp_file_match, override_cpp_opts):
+
+        # Find all C++ files that match the input string and apply the override options
+        cpp_file_match = cpp_file_match.lower()
+        for obj_file in self.obj_files:
+            if cpp_file_match in obj_file.Path.lower():
+                obj_file.SetCPPOptions(override_cpp_opts)

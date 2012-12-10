@@ -623,17 +623,19 @@ class VCLibOptions:
 #
 class VCCompileNode (BuildSystem.Node):
 
-    def __init__(self, path):
+    def __init__(self, path, override_cpp_opts):
 
         super().__init__()
         self.Path = path
+        self.OverrideCPPOptions = override_cpp_opts
 
     def Build(self, env):
 
         output_files = self.GetOutputFiles(env)
 
         # Construct the command-line
-        cmdline = [ "cl.exe" ] + env.CurrentConfig.CPPOptions.CommandLine
+        cpp_opts = self.GetCPPOptions(env)
+        cmdline = [ "cl.exe" ] + cpp_opts.CommandLine
         if len(output_files) > 1:
             cmdline += [ "/Fd" + output_files[1] ]
         cmdline += [ "/Fo" + output_files[0], self.GetInputFile(env) ]
@@ -650,6 +652,14 @@ class VCCompileNode (BuildSystem.Node):
 
         return process.returncode == 0
 
+    def SetCPPOptions(self, override_cpp_opts):
+
+        self.OverrideCPPOptions = override_cpp_opts
+
+    def GetCPPOptions(self, env):
+
+        return env.CurrentConfig.CPPOptions if self.OverrideCPPOptions is None else self.OverrideCPPOptions
+
     def GetInputFile(self, env):
 
         return self.Path
@@ -662,14 +672,15 @@ class VCCompileNode (BuildSystem.Node):
 
         files = [ path + ".obj" ]
 
-        if env.CurrentConfig.CPPOptions.DebuggingInfo != None:
+        cpp_opts = self.GetCPPOptions(env)
+        if cpp_opts.DebuggingInfo != None:
 
             # The best we can do here is ensure that the obj\src directory for
             # a group of files shares the same pdb/idb
             path = os.path.dirname(path)
             files += [ os.path.join(path, "vc100.pdb") ]
 
-            if env.CurrentConfig.CPPOptions.DebuggingInfo == VCDebuggingInfo.PDBEDITANDCONTINUE:
+            if cpp_opts.DebuggingInfo == VCDebuggingInfo.PDBEDITANDCONTINUE:
                 files += [ os.path.join(path, "vc100.idb") ]
 
         return files
