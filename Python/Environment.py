@@ -29,6 +29,7 @@
 
 import os
 import sys
+import fnmatch
 import Utils
 import BuildSystem
 import JDKPlatform
@@ -162,6 +163,25 @@ class Environment:
         source = output.GetOutputFiles(self)[index]
         dest = os.path.join(dest_path, os.path.basename(source))
         return BuildSystem.CopyNode(output, source, dest)
+
+    def FindFiles(self, path, patterns):
+
+        # With no pattern, just use the path
+        if patterns == None:
+            return [ path ]
+
+        # Process each pattern split by semi-colon
+        matches = [ ]
+        for pattern in patterns.split(";"):
+            
+            pattern = pattern.strip();
+
+            # Recursive walk the required path looking for pattern matches
+            for root, dirnames, filenames in os.walk(path):
+                for filename in fnmatch.filter(filenames, pattern):
+                    matches += [ os.path.join(root, filename) ]
+
+        return matches
 
     def GetFilename(self, crc):
 
