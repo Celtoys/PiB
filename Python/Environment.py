@@ -183,6 +183,25 @@ class Environment:
 
         return matches
 
+    def CopyFiles(self, path, patterns, dest_dir):
+
+        files = self.FindFiles(path, patterns)
+
+        # Generate copy nodes for each file
+        copy_objs = [ ]
+        for src in files:
+
+            # Need the directory name relative to the source root
+            dest = os.path.relpath(src, path)
+            dest = os.path.dirname(dest)
+
+            # Prefix with the publish destination
+            dest = os.path.join(dest_dir, dest)
+
+            copy_objs += [ self.CopyFile(src, dest) ]
+
+        return copy_objs
+
     def GetFilename(self, crc):
 
         return self.BuildMetadata.GetFilename(crc)
