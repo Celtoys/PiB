@@ -32,7 +32,6 @@ import sys
 import fnmatch
 import Utils
 import BuildSystem
-import JDKPlatform
 import MSVCPlatform
 
 
@@ -90,12 +89,6 @@ class Environment:
                 return None
             metadata.UserData = envvars
 
-        # Add the JDK
-        # TODO: Need to decide whether all environments need to be present, PiB is fault-tolerant or
-        # you only need what build environments you try to use at runtime
-        # TODO: This envvar modification needs to be done dynamically when the JDK is requested
-        #envvars["PATH"] += ";" + JDKPlatform.GetJDKBinPath()
-        
         return Environment(metadata.UserData, metadata)
 
     def __init__(self, envvars, metadata):
@@ -148,10 +141,6 @@ class Environment:
 
         return MSVCPlatform.VCLibNode(filename, dependencies, lib_files)
     
-    def JavaFile(self, filename):
-        
-        return JDKPlatform.JDKCompileNode(filename)
-
     def CopyFile(self, source, dest_path):
 
         dest = os.path.join(dest_path, os.path.basename(source))
