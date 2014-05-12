@@ -48,6 +48,7 @@ def OpenPiped(args, env = None):
                 break
 
     # Send output to a pipe, push stderr through stdout to ensure they're ordered correctly
+    #print (args)
     return subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=env)
 
 
