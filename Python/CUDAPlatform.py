@@ -104,7 +104,7 @@ class CUDACompileOptions:
 
         cmdline = [ ]
 
-        if self.Language: cmdline += [ self.Language ]
+        if self.Language: cmdline += [ '--x=' + self.Language ]
 
         cmdline += [ '--include-path=' + path for path in self.IncludePaths ]
         cmdline += [ '--system-include=' + path for path in self.SystemIncludePaths ]
