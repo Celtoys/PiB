@@ -81,6 +81,9 @@ class CUDACompileOptions:
         # List of libraries to link with (specified without the library extension)
         self.Libraries = [ ]
 
+        # Specify 32/64 bit machine target
+        self.MachineBits = 32
+
         # Specific the path in which the compiler host EXE resides (e.g. MSVC, GCC)
         self.HostCompilerPath = None
 
@@ -88,7 +91,7 @@ class CUDACompileOptions:
         self.CUDARuntime = None
 
         # Generate debug information for host/device code
-        self.HostDebug = False
+        self.HostDebugLevel = None
         self.DeviceDebug = False
 
         # GPU architecture and GPUs to generate code for
@@ -122,10 +125,12 @@ class CUDACompileOptions:
         cmdline += [ '--library-path=' + lib for lib in self.LibraryPaths ]
         cmdline += [ '--library' + lib for lib in self.Libraries ]
 
+        cmdline += [ '--machine=' + str(self.MachineBits) ]
+
         if self.HostCompilerPath: cmdline += [ '--compiler-bindir=' + self.HostCompilerPath ]
         if self.CUDARuntime: cmdline += [ '--cudart=' + self.CUDARuntime ]
 
-        if self.HostDebug: cmdline += [ '--debug' ]
+        if self.HostDebugLevel != None: cmdline += [ '--debug=' + str(self.HostDebugLevel) ]
         if self.DeviceDebug: cmdline += [ '--device-debug' ]
 
         cmdline += [ '--gpu-architecture=' + self.GPUArch ]
@@ -184,6 +189,52 @@ class BuildPTXNode (BuildSystem.Node):
         path = os.path.splitext(self.Path)[0]
         path = os.path.join(env.CurrentConfig.OutputPath, path)
         return [ path + ".ptx" ]
+
+    def GetTempOutputFiles(self, env):
+
+        return self.GetOutputFiles(env)
+
+
+class BuildCuBinNode (BuildSystem.Node):
+
+    def __init__(self, path):
+
+        super().__init__()
+        self.Path = path
+
+    def Build(self, env):
+
+        # Build command-line from current configuration
+        cmdline = [ os.path.join(BinDir, "nvcc.exe") ]
+        cmdline += [ '--cubin' ]
+        cmdline += env.CurrentConfig.CUDACompileOptions.CommandLine
+
+        # Add the output .cubin file
+        output_files = self.GetOutputFiles(env)
+        cmdline += [ '--output-file=' + output_files[0] ]
+
+        # Add input file before finishing
+        cmdline += [ self.Path ]
+        Utils.ShowCmdLine(env, cmdline)
+
+        # Launch the compiler and wait for it to finish
+        process = Process.OpenPiped(cmdline)
+        output = Process.WaitForPipeOutput(process)
+        if not env.NoToolOutput:
+            print(output)
+
+        return process.returncode == 0
+
+    def GetInputFile(self, env):
+
+        return self.Path
+
+    def GetOutputFiles(self, env):
+
+        # Get the relocated path minus extension
+        path = os.path.splitext(self.Path)[0]
+        path = os.path.join(env.CurrentConfig.OutputPath, path)
+        return [ path + ".cubin" ]
 
     def GetTempOutputFiles(self, env):
 
