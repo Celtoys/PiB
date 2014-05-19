@@ -114,12 +114,13 @@ class MergeNode (BuildSystem.Node):
 
 class CppScanNode (BuildSystem.Node):
 
-    def __init__(self, sys_include_paths, include_paths, cpp_output):
+    def __init__(self, sys_include_paths, include_paths, defines, cpp_output):
 
         super().__init__()
         self.SysIncludePaths = sys_include_paths
         self.IncludePaths = include_paths
         self.CppOutput = cpp_output
+        self.Defines = defines
         self.Dependencies = [ cpp_output ]
 
     def Build(self, env):
@@ -138,6 +139,8 @@ class CppScanNode (BuildSystem.Node):
             cmdline += [ "-isystem", path ]
         for path in self.IncludePaths:
             cmdline += [ "-i", path ]
+        for define in self.Defines:
+            cmdline += [ "-D", define ]
         Utils.ShowCmdLine(env, cmdline)
 
         # Launch the scanner and wait for it to finish
@@ -162,8 +165,8 @@ class CppScanNode (BuildSystem.Node):
         return self.GetOutputFiles(env)
 
 
-def CppScan(sys_include_paths, include_paths, cpp_output):
-    return CppScanNode(sys_include_paths, include_paths, cpp_output)
+def CppScan(sys_include_paths, include_paths, defines, cpp_output):
+    return CppScanNode(sys_include_paths, include_paths, defines, cpp_output)
 
 def Merge(path, db_files, cpp_codegen):
     return MergeNode(path, db_files, cpp_codegen)
