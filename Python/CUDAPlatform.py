@@ -151,10 +151,11 @@ class CUDACompileOptions:
 
 class BuildPTXNode (BuildSystem.Node):
 
-    def __init__(self, path):
+    def __init__(self, source):
 
         super().__init__()
-        self.Path = path
+        self.Source = source
+        self.Dependencies = [ source ]
 
     def Build(self, env):
 
@@ -168,7 +169,7 @@ class BuildPTXNode (BuildSystem.Node):
         cmdline += [ '--output-file=' + output_files[0] ]
 
         # Add input file before finishing
-        cmdline += [ self.Path ]
+        cmdline += [ self.GetInputFile(env) ]
         Utils.ShowCmdLine(env, cmdline)
 
         # Launch the compiler and wait for it to finish
@@ -181,12 +182,12 @@ class BuildPTXNode (BuildSystem.Node):
 
     def GetInputFile(self, env):
 
-        return self.Path
+        return self.Source.GetOutputFiles(env)[0]
 
     def GetOutputFiles(self, env):
 
         # Get the relocated path minus extension
-        path = os.path.splitext(self.Path)[0]
+        path = os.path.splitext(self.GetInputFile(env))[0]
         path = os.path.join(env.CurrentConfig.OutputPath, path)
         return [ path + ".ptx" ]
 
@@ -197,10 +198,11 @@ class BuildPTXNode (BuildSystem.Node):
 
 class BuildCuBinNode (BuildSystem.Node):
 
-    def __init__(self, path):
+    def __init__(self, source):
 
         super().__init__()
-        self.Path = path
+        self.Source = source
+        self.Dependencies = [ source ]
 
     def Build(self, env):
 
@@ -214,7 +216,7 @@ class BuildCuBinNode (BuildSystem.Node):
         cmdline += [ '--output-file=' + output_files[0] ]
 
         # Add input file before finishing
-        cmdline += [ self.Path ]
+        cmdline += [ self.GetInputFile(env) ]
         Utils.ShowCmdLine(env, cmdline)
 
         # Launch the compiler and wait for it to finish
@@ -227,12 +229,12 @@ class BuildCuBinNode (BuildSystem.Node):
 
     def GetInputFile(self, env):
 
-        return self.Path
+        return self.Source.GetOutputFiles(env)[0]
 
     def GetOutputFiles(self, env):
 
         # Get the relocated path minus extension
-        path = os.path.splitext(self.Path)[0]
+        path = os.path.splitext(self.GetInputFile(env))[0]
         path = os.path.join(env.CurrentConfig.OutputPath, path)
         return [ path + ".cubin" ]
 

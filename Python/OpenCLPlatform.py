@@ -52,17 +52,18 @@ class OpenCLCompileOptions:
 
 class BuildOpenCLNode (BuildSystem.Node):
 
-    def __init__(self, path):
+    def __init__(self, source):
 
         super().__init__()
-        self.Path = path
+        self.Source = source
+        self.Dependencies = [ source ]
 
     def Build(self, env):
 
         # Build command-line from current configuration
         cmdline = [ os.path.join(_InstallPath, "oclpc.exe") ]
         cmdline += env.CurrentConfig.OpenCLCompileOptions.CommandLine
-        cmdline += [ self.Path ]
+        cmdline += [ self.GetInputFile(env) ]
         Utils.ShowCmdLine(env, cmdline)
 
         # Launch the compiler and wait for it to finish
@@ -81,12 +82,13 @@ class BuildOpenCLNode (BuildSystem.Node):
 
     def GetInputFile(self, env):
 
-        return self.Path
+        print(self.Source.GetOutputFiles(env)[0])
+        return self.Source.GetOutputFiles(env)[0]
 
     def GetOutputFiles(self, env):
 
         # Get the relocated path minus extension
-        path = os.path.splitext(self.Path)[0]
+        path = os.path.splitext(self.GetInputFile(env))[0]
         path = os.path.join(env.CurrentConfig.OutputPath, path)
         return [ path + "_built.txt" ]
 
