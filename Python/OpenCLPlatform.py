@@ -82,7 +82,6 @@ class BuildOpenCLNode (BuildSystem.Node):
 
     def GetInputFile(self, env):
 
-        print(self.Source.GetOutputFiles(env)[0])
         return self.Source.GetOutputFiles(env)[0]
 
     def GetOutputFiles(self, env):
