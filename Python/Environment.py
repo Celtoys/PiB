@@ -125,6 +125,10 @@ class Environment:
         crc = self.BuildMetadata.AddToFileMap(filename)
         return BuildSystem.FileNode(crc)
 
+    def NewFiles(self, path, pattern):
+
+        return [ self.NewFile(filename) for filename in Utils.Glob(path, pattern) ]
+
     def OutputFile(self, env, node):
 
         return BuildSystem.OutputFileNode(env, node)
