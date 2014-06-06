@@ -30,9 +30,10 @@ class BuildNode (BuildSystem.Node):
 
         # Build command-line from current configuration
         cmdline = [ os.path.join(_InstallPath, "cbpp.exe") ]
-        cmdline += [ "-noheader" ]
         cmdline += [ self.GetInputFile(env) ]
+        cmdline += [ "-noheader" ]
         cmdline += [ "-output", output_files[0] ]
+        cmdline += [ "-output_bin", output_files[1] ]
         Utils.ShowCmdLine(env, cmdline)
 
         # Launch the compiler and wait for it to finish
@@ -49,9 +50,15 @@ class BuildNode (BuildSystem.Node):
 
     def GetOutputFiles(self, env):
 
-        # Maintain extension, just point to build output path
-        path = os.path.join(env.CurrentConfig.IntermediatePath, self.GetInputFile(env))
-        return [ path ]
+        input_file = self.GetInputFile(env)
+
+        # Pre-processed path maintains extension, pointing to intermediate directory
+        pp_path = os.path.join(env.CurrentConfig.IntermediatePath, input_file)
+
+        # CUDA binary path is the output directory with extension change
+        bin_path = os.path.join(env.CurrentConfig.OutputPath, os.path.splitext(input_file)[0] + ".ckt")
+
+        return [ pp_path, bin_path ]
 
     def GetTempOutputFiles(self, env):
 
