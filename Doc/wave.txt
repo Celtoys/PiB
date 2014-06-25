@@ -1,0 +1,48 @@
+Usage: wave [options] [@config-file(s)] file:
+ 
+  Options allowed on the command line only:
+    -h [--help]:            print out program usage (this message)
+    -v [--version]:         print the version number
+    -c [--copyright]:       print out the copyright statement
+    --config-file filepath: specify a config file (alternatively: @filepath)
+ 
+  Options allowed additionally in a config file:
+    -o [--output] path:          specify a file [path] to use for output instead of 
+                                 stdout or disable output [-]
+    -E [ --autooutput ]:         output goes into a file named <input_basename>.i
+    -I [--include] path:         specify an additional include directory
+    -S [--sysinclude] syspath:   specify an additional system include directory
+    -F [--forceinclude] file:    force inclusion of the given file
+    -D [--define] macro[=[value]]:    specify a macro to define
+    -P [--predefine] macro[=[value]]: specify a macro to predefine
+    -U [--undefine] macro:       specify a macro to undefine
+    -u [--undefineall]:          undefine all macrodefinitions
+    -n [--nesting] depth:        specify a new maximal include nesting depth
+	
+  Extended options (allowed everywhere)
+    -t [--traceto] arg:          output trace info to a file [arg] or to stderr [-]
+    --timer:                     output overall elapsed computing time
+    --long_long:                 enable long long support if C++ mode
+    --variadics:                 enable variadics and placemarkers in C++ mode
+    --c99:                       enable C99 mode (implies variadics and placemarkers)
+    --c++11                      enable C++11 mode (implies --variadics and --long_long)
+    -l [ --listincludes ] arg:   list included file to a file [arg] or to stdout [-]
+    -m [ --macronames ] arg:     list names of all defined macros to a file [arg] or 
+                                 to stdout [-]
+    -c [ --macrocounts ] arg     list macro invocation counts to a file [arg] or to
+                                 stdout [-]
+    -p [ --preserve ] arg (=0):  preserve whitespace
+                                 0: no whitespace is preserved (default),
+                                 1: begin of line whitespace is preserved,
+                                 2: comments and begin of line whitespace is preserved,
+                                 3: all whitespace is preserved
+    -L [ --line ] arg (=1):      control the generation of #line directives
+                                 0: no #line directives are generated
+                                 1: #line directives will be emitted (default)
+    -x [ --extended ]:           enable the #pragma wave system() directive
+    -G [ --noguard ]:            disable include guard detection
+    -g [ --listguards ]:         list names of files flagged as 'include once' to a
+                                 file [arg] or to stdout [-]
+    -s [ --state ] arg:          load and save state information from/to the given
+                                 file [arg] or 'wave.state' [-] (interactive mode
+                                 only)
