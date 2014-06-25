@@ -65,7 +65,7 @@ class FileMetadata:
 
         # Create file nodes for each dependency
         self.ImplicitDeps = [ ]
-        for filename in deps:
+        for filename in set(deps):
             filenode = env.NewFile(filename)
 
             # Ensure each dependency has a metadata entry
