@@ -33,6 +33,7 @@ import fnmatch
 import Utils
 import BuildSystem
 import MSVCPlatform
+import WindowsPlatform
 
 
 #
