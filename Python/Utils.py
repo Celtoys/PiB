@@ -168,20 +168,22 @@ class IncludeScanner:
         if line == "":
             return
 
-        # Strip newline
+        # Strip newline/whitespace
         line = line.strip("\r\n")
+        line = line.lstrip()
+
+        # Prioritise checking for ignored lines
+        if self.IgnoreLine(line):
+            return
 
         # Scan for included files and add to the list
-        if line.startswith(self.Prefix):
+        elif line.startswith(self.Prefix):
             #path = line[len(self.Prefix):self.StripOffset].lstrip()
             path = self.Parser(line, len(self.Prefix))
             path = NormalisePath(path)
             self.Includes.add(path)
             #self.Includes.add(self.Env.NewFile(path))
             #self.Includes.append(self.Env.NewFile(path))
-
-        elif self.IgnoreLine(line):
-            return
 
         elif not self.Env.NoToolOutput:
             print(line)

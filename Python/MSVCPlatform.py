@@ -719,7 +719,7 @@ class VCLinkNode (BuildSystem.Node):
         Utils.ShowCmdLine(env, cmdline)
 
         # Create the lib scanner and run the link process
-        scanner = Utils.IncludeScanner(env, "    Searching ", [ "Searching libraries", "Finished searching libraries" ], lambda line, length: line[length:-1])
+        scanner = Utils.IncludeScanner(env, "Searching ", [ "Searching libraries", "Finished searching libraries" ], lambda line, length: line[length:-1])
         process = Process.OpenPiped(cmdline, env.EnvironmentVariables)
         Process.PollPipeOutput(process, scanner)
 
