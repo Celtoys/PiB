@@ -35,6 +35,11 @@ class Options:
         self.DefineMacros = [ ]
         self.UndefineMacros = [ ]
 
+        self.LongLong = True
+        self.Variadics = True
+        self.C99 = False
+        self.Cpp11 = False
+
         self.Dirty = True
         self.CommandLine = [ ]
 
@@ -51,12 +56,26 @@ class Options:
             cmdline = [ ]
             cmdline += [ ('--include="' + os.path.normpath(path) + '"') for path in self.IncludePaths ]
             cmdline += [ ('--sysinclude="' + os.path.normpath(path) + '"') for path in self.SystemIncludePaths ]
-            cmdline += [ '--define=' + macro for macro in self.DefineMacros ]
             cmdline += [ '--undefine=' + macro for macro in self.UndefineMacros ]
+
+            self.FormatDefines(cmdline)
+
+            if self.LongLong: cmdline += [ "--long_long" ]
+            if self.Variadics: cmdline += [ "--variadics" ]
+            if self.C99: cmdline += [ "--c99" ]
+            if self.Cpp11: cmdline += [ "--c++11" ]
 
             # Update and mark as not dirty without calling into __setattr__
             self.__dict__["CommandLine"] = cmdline
             self.__dict__["Dirty"] = False
+
+    def FormatDefines(self, cmdline):
+
+        for define in self.DefineMacros:
+            if isinstance(define, str):
+                cmdline += [ '-D ' + define ]
+            else:
+                cmdline += [ '-D ' + str(define[0]) + "=" + str(define[1]) ]
 
 
 
@@ -90,7 +109,7 @@ class BuildNode (BuildSystem.Node):
         Utils.ShowCmdLine(env, cmdline)
 
         # Launch Wave with a dependency scanner and wait for it to finish
-        scanner = Utils.IncludeScanner(env, '"', [ ], lambda line, length: line.split("(")[1].rstrip()[:-1])
+        scanner = Utils.IncludeScanner(env, '"', [ "<" ], lambda line, length: line.split("(")[1].rstrip()[:-1])
         process = Process.OpenPiped(cmdline, env.EnvironmentVariables)
         Process.WaitForPipeOutput(process, scanner)
 
