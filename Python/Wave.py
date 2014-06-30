@@ -122,14 +122,13 @@ class BuildNode (BuildSystem.Node):
     def GetInputFile(self, env):
 
         path = self.Source.GetOutputFiles(env)[0]
-        return os.path.normpath(path)
+        return path
 
     def GetOutputFiles(self, env):
 
         # Get the relocated path minus extension
         path = os.path.splitext(self.GetInputFile(env))[0]
-        path = os.path.join(env.CurrentConfig.OutputPath, path)
-        path = os.path.normpath(path)
+        path = os.path.join(env.CurrentConfig.IntermediatePath, path)
         return [ path + "." + self.Extension ]
 
     def GetTempOutputFiles(self, env):

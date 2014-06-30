@@ -186,57 +186,15 @@ class BuildPTXNode (BuildSystem.Node):
 
     def GetOutputFiles(self, env):
 
-        # Get the relocated path minus extension
-        path = os.path.splitext(self.GetInputFile(env))[0]
-        path = os.path.join(env.CurrentConfig.OutputPath, path)
-        return [ path + ".ptx" ]
+        # Get the filename minus path and extension
+        # TODO: This only works if this node has another node as input that resides in
+        # the same directory as it. Need to evaluate relative path inputs in long chains.
+        input_file = self.GetInputFile(env)
+        input_file = os.path.split(input_file)[1]
+        input_file = os.path.splitext(input_file)[0]
 
-    def GetTempOutputFiles(self, env):
-
-        return self.GetOutputFiles(env)
-
-
-class BuildCuBinNode (BuildSystem.Node):
-
-    def __init__(self, source):
-
-        super().__init__()
-        self.Source = source
-        self.Dependencies = [ source ]
-
-    def Build(self, env):
-
-        # Build command-line from current configuration
-        cmdline = [ os.path.join(BinDir, "nvcc.exe") ]
-        cmdline += [ '--cubin' ]
-        cmdline += env.CurrentConfig.CUDACompileOptions.CommandLine
-
-        # Add the output .cubin file
-        output_files = self.GetOutputFiles(env)
-        cmdline += [ '--output-file=' + output_files[0] ]
-
-        # Add input file before finishing
-        cmdline += [ self.GetInputFile(env) ]
-        Utils.ShowCmdLine(env, cmdline)
-
-        # Launch the compiler and wait for it to finish
-        process = Process.OpenPiped(cmdline)
-        output = Process.WaitForPipeOutput(process)
-        if not env.NoToolOutput:
-            print(output)
-
-        return process.returncode == 0
-
-    def GetInputFile(self, env):
-
-        return self.Source.GetOutputFiles(env)[0]
-
-    def GetOutputFiles(self, env):
-
-        # Get the relocated path minus extension
-        path = os.path.splitext(self.GetInputFile(env))[0]
-        path = os.path.join(env.CurrentConfig.OutputPath, path)
-        return [ path + ".cubin" ]
+        ptx_path = os.path.join(env.CurrentConfig.OutputPath, input_file + ".ptx")
+        return [ ptx_path ]
 
     def GetTempOutputFiles(self, env):
 

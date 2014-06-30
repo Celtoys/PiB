@@ -18,11 +18,12 @@ def SetInstallPath(path):
 
 class BuildNode (BuildSystem.Node):
 
-    def __init__(self, source):
+    def __init__(self, source, target):
 
         super().__init__()
         self.Source = source
         self.Dependencies = [ source ]
+        self.Target = target
 
     def Build(self, env):
 
@@ -33,7 +34,9 @@ class BuildNode (BuildSystem.Node):
         cmdline += [ self.GetInputFile(env) ]
         cmdline += [ "-noheader" ]
         cmdline += [ "-output", output_files[0] ]
-        cmdline += [ "-output_bin", output_files[1] ]
+        if len(output_files) > 1:
+            cmdline += [ "-output_bin", output_files[1] ]
+        cmdline += [ "-target", self.Target ]
         Utils.ShowCmdLine(env, cmdline)
 
         # Launch the compiler and wait for it to finish
@@ -50,15 +53,23 @@ class BuildNode (BuildSystem.Node):
 
     def GetOutputFiles(self, env):
 
+        # Get the filename minus path and extension
+        # TODO: This only works if this node has another node as input that resides in
+        # the same directory as it. Need to evaluate relative path inputs in long chains.
         input_file = self.GetInputFile(env)
+        input_file = os.path.split(input_file)[1]
+        input_file = os.path.splitext(input_file)[0]
 
-        # Pre-processed path maintains extension, pointing to intermediate directory
-        pp_path = os.path.join(env.CurrentConfig.IntermediatePath, input_file)
+        # Put pre-processed location in intermidate directory
+        pp_path = os.path.join(env.CurrentConfig.IntermediatePath, input_file + "." + self.Target + "_cb")
+        paths = [ pp_path ]
 
         # CUDA binary path is the output directory with extension change
-        bin_path = os.path.join(env.CurrentConfig.OutputPath, os.path.splitext(input_file)[0] + ".ckt")
+        if self.Target == "cuda":
+            bin_path = os.path.join(env.CurrentConfig.OutputPath, input_file + ".ckt")
+            paths += [ bin_path ]
 
-        return [ pp_path, bin_path ]
+        return paths
 
     def GetTempOutputFiles(self, env):
 
