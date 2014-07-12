@@ -2,9 +2,16 @@
 import Utils
 
 
+#
+# Use this to mark library dependencies as "weak". This means that they will be used as input to a link
+# node but won't be used to see if that node needs to be rebuilt if the library changes.
+#
+CppLinkWeakDep = True
+
+
 class CppBuild:
     
-    def __init__(self, env, dirs, target, ext_libs = [], libs = [], build = True):
+    def __init__(self, env, dirs, target, ext_libs = [], build = True):
 
         # Gather source/header files
         self.cpp_files = []
@@ -14,18 +21,22 @@ class CppBuild:
             self.cpp_files += Utils.Glob(dir, "*.c")
             self.hpp_files += Utils.Glob(dir, "*.h")
 
-        # Compile C++ files and create file nodes out of external library references
+        # Create nodes for compiling the C+ files
         self.obj_files = [ env.CPPFile(file) for file in self.cpp_files ]
-        self.lib_files = [ env.NewFile(file) for file in ext_libs ]
+
+        # Create file nodes for the input libraries
+        # Split into two lists: strong/weak dependencies (see CppLinkWeakDep)
+        self.lib_files = [ env.NewFile(file) for file in ext_libs if type(file) != tuple ]
+        self.weak_lib_files = [ env.NewFile(file[0]) for file in ext_libs if type(file) == tuple ]
 
         # Link or use librarian dependent on output path
         self.output = None
         if target.endswith(".exe"):
-            self.output = self.exe = env.Link(target, self.obj_files, self.lib_files + libs)
+            self.output = self.exe = env.Link(target, self.obj_files, self.lib_files, self.weak_lib_files)
         elif target.endswith(".dll"):
-            self.output = self.dll = env.Link(target, self.obj_files, self.lib_files + libs)
+            self.output = self.dll = env.Link(target, self.obj_files, self.lib_files, self.weak_lib_files)
         elif target.endswith(".lib"):
-            self.output = self.lib = env.Lib(target, self.obj_files, self.lib_files + libs)
+            self.output = self.lib = env.Lib(target, self.obj_files, self.lib_files)
 
         # Build all the config command lines
         for config in env.Configs.values():

@@ -695,7 +695,7 @@ class VCCompileNode (BuildSystem.Node):
 #
 class VCLinkNode (BuildSystem.Node):
 
-    def __init__(self, path, obj_files, lib_files):
+    def __init__(self, path, obj_files, lib_files, weak_lib_files):
 
         super().__init__()
         self.Path = path
@@ -703,6 +703,7 @@ class VCLinkNode (BuildSystem.Node):
         # Object files are explicit dependencies, lib files are implicit, scanned during output
         self.Dependencies = obj_files
         self.LibFiles = lib_files
+        self.WeakLibFiles = weak_lib_files
 
     def Build(self, env):
 
@@ -716,16 +717,46 @@ class VCLinkNode (BuildSystem.Node):
             cmdline += [ "/MAP:" + output_files[1] ]
         cmdline += [ dep.GetOutputFiles(env)[0] for dep in self.Dependencies ]
         cmdline += [ dep.GetOutputFiles(env)[0] for dep in self.LibFiles ]
+        cmdline += [ dep.GetOutputFiles(env)[0] for dep in self.WeakLibFiles ]
         Utils.ShowCmdLine(env, cmdline)
 
+        #
+        # When library files get added as dependencies to this link node they get added without a path.
+        # This requires the linker to check its list of search paths for the location of any input
+        # library files.
+        #
+        # The build system however, needs full paths to evaluate dependencies on each build. Rather than
+        # trying to search the library paths in the build system (and potentially getting them wrong/different
+        # to the linker), the linker is asked to output the full path of all libraries it links with. These
+        # then get added as implicit dependencies.
+        #
         # Create the lib scanner and run the link process
+        #
         scanner = Utils.IncludeScanner(env, "Searching ", [ "Searching libraries", "Finished searching libraries" ], lambda line, length: line[length:-1])
         process = Process.OpenPiped(cmdline, env.EnvironmentVariables)
         Process.PollPipeOutput(process, scanner)
 
+        #
+        # Weak library files are those that should be provided as input to the link step but not used
+        # as dependencies to check if the link step needs to be rebuilt. Search for those in the scanner
+        # output and exclude them from the implicit dependency list.
+        #
+        includes = [ ]
+        for include in scanner.Includes:
+
+            ignore_dep = False
+            for lib in self.WeakLibFiles:
+                lib_name = lib.GetInputFile(env)
+                if lib_name in include:
+                    ignore_dep = True
+                    break
+
+            if not ignore_dep:
+                includes.append(include)
+
         # Record the implicit dependencies for this file
         data = env.GetFileMetadata(self.GetInputFile(env))
-        data.SetImplicitDeps(env, scanner.Includes)
+        data.SetImplicitDeps(env, includes)
 
         return process.returncode == 0
 

@@ -138,9 +138,9 @@ class Environment:
 
         return MSVCPlatform.VCCompileNode(filename, override_cpp_opts)
 
-    def Link(self, filename, obj_files, lib_files = []):
+    def Link(self, filename, obj_files, lib_files = [], weak_lib_files = []):
 
-        return MSVCPlatform.VCLinkNode(filename, obj_files, lib_files)
+        return MSVCPlatform.VCLinkNode(filename, obj_files, lib_files, weak_lib_files)
 
     def Lib(self, filename, dependencies, lib_files = []):
 
