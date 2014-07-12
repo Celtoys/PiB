@@ -19,7 +19,6 @@ class CppBuild:
         self.lib_files = [ env.NewFile(file) for file in ext_libs ]
 
         # Link or use librarian dependent on output path
-        target = target.lower()
         self.output = None
         if target.endswith(".exe"):
             self.output = self.exe = env.Link(target, self.obj_files, self.lib_files + libs)
