@@ -16,34 +16,94 @@ def SetInstallPath(path):
     _InstallPath = path
 
 
+class Options:
+
+    #
+    # TODO: Uses new dirty options checking mechanism.
+    #
+    def __init__(self):
+
+        # List of include search paths and macros
+        self.IncludePaths = [ ]
+        self.DefineMacros = [ ]
+
+        self.Dirty = True
+        self.CommandLine = [ ]
+
+    def __setattr__(self, name, value):
+
+        # Assign the field and mark the command-line as dirty
+        self.__dict__[name] = value
+        self.__dict__["Dirty"] = True
+
+    def UpdateCommandLine(self):
+
+        if self.Dirty:
+
+            cmdline = [ ]
+
+            for path in self.IncludePaths:
+                cmdline += [ '-i', os.path.normpath(path) ]
+
+            self.FormatDefines(cmdline)
+
+            # Update and mark as not dirty without calling into __setattr__
+            self.__dict__["CommandLine"] = cmdline
+            self.__dict__["Dirty"] = False
+
+    def FormatDefines(self, cmdline):
+
+        for define in self.DefineMacros:
+            if isinstance(define, str):
+                cmdline += [ '-d ' + define ]
+            else:
+                cmdline += [ '-d ' + str(define[0]) + "=" + str(define[1]) ]
+
+
+
 class BuildNode (BuildSystem.Node):
 
-    def __init__(self, source, target):
+    #
+    # TODO: Uses new options location system of passing a map from config name to options
+    # that are referenced in Build. Means nothing specific to this build node need to
+    # be stored in the config object.
+    #
+    def __init__(self, source, target, options_map):
 
         super().__init__()
         self.Source = source
         self.Dependencies = [ source ]
         self.Target = target
+        self.OptionsMap = options_map
 
     def Build(self, env):
+
+        # Ensure command -line for current configuration is up-to-date
+        options = self.OptionsMap[env.CurrentConfig.CmdLineArg]
+        options.UpdateCommandLine()
 
         output_files = self.GetOutputFiles(env)
 
         # Build command-line from current configuration
         cmdline = [ os.path.join(_InstallPath, "cbpp.exe") ]
         cmdline += [ self.GetInputFile(env) ]
+        cmdline += options.CommandLine
         cmdline += [ "-noheader" ]
         cmdline += [ "-output", output_files[0] ]
+        cmdline += [ "-show_includes" ]
         if len(output_files) > 1:
             cmdline += [ "-output_bin", output_files[1] ]
         cmdline += [ "-target", self.Target ]
         Utils.ShowCmdLine(env, cmdline)
 
-        # Launch the compiler and wait for it to finish
-        process = Process.OpenPiped(cmdline)
-        output = Process.WaitForPipeOutput(process)
-        if not env.NoToolOutput:
-            print(output)
+        # Launch cbpp with a dependency scanner and wait for it to finish
+        scanner = Utils.IncludeScanner(env, 'cpp: included "', None, lambda line, length: line[length:-1])
+        process = Process.OpenPiped(cmdline, env.EnvironmentVariables)
+        Process.WaitForPipeOutput(process, scanner)
+
+        # Record the implicit dependencies for this file
+        data = env.GetFileMetadata(self.GetInputFile(env))
+        data.SetImplicitDeps(env, scanner.Includes)
 
         return process.returncode == 0
 
