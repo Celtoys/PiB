@@ -30,6 +30,7 @@ import os
 import sys
 import errno
 import fnmatch
+import shutil
 
 
 #
@@ -87,6 +88,18 @@ def RemoveFile(filename):
 
 
 #
+# Copies files, returning True/False for whether the operation succeeded.
+#
+def CopyFile(source, dest):
+
+    try:
+        shutil.copyfile(source, dest)
+        return True
+    except IOError as exc:
+        return False
+
+
+#
 # Instead of checking for existence of a path before creating it, this will try to
 # create the path and react to any thrown exceptions instead. This requires one less
 # call into the file system.
@@ -97,7 +110,9 @@ def Makedirs(path):
         os.makedirs(path)
     except OSError as exc:
         if exc.errno != errno.EEXIST:
-            raise
+            return False
+
+    return True
 
 
 def Glob(path, pattern):

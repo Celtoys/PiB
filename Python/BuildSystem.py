@@ -29,7 +29,6 @@
 import os
 import sys
 import gzip
-import shutil
 import pickle
 import binascii
 import Utils
@@ -233,12 +232,16 @@ class CopyNode (Node):
     def Build(self, env):
 
         if not os.path.exists(self.Source):
-            print("Skipping copy of " + self.Source + " because it doesn't exist")
+            print("   FAILED: Source file doesn't exist")
             return False
 
         print("Copying from " + self.Source + " to " + self.Destination)
-        Utils.Makedirs(os.path.dirname(self.Destination))
-        shutil.copyfile(self.Source, self.Destination)
+        if Utils.Makedirs(os.path.dirname(self.Destination)) == False:
+            print("   FAILED: destination directories couldn't be created")
+            return False
+        if Utils.CopyFile(self.Source, self.Destination) == False:
+            print("   FAILED: Copy operation failed")
+            return False
 
         return True
 
