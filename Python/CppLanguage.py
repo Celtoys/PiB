@@ -17,9 +17,14 @@ class CppBuild:
         self.cpp_files = []
         self.hpp_files = []
         for dir in dirs:
-            self.cpp_files += Utils.Glob(dir, "*.cpp")
-            self.cpp_files += Utils.Glob(dir, "*.c")
-            self.hpp_files += Utils.Glob(dir, "*.h")
+            if dir.endswith(".cpp") or dir.endswith("*.c"):
+                self.cpp_files += [ dir ]
+            elif dir.endswith(".h"):
+                self.hpp_files += [ dir ]
+            else:
+                self.cpp_files += Utils.Glob(dir, "*.cpp")
+                self.cpp_files += Utils.Glob(dir, "*.c")
+                self.hpp_files += Utils.Glob(dir, "*.h")
 
         # Create nodes for compiling the C+ files
         self.obj_files = [ env.CPPFile(file) for file in self.cpp_files ]
