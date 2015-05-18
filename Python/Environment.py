@@ -289,9 +289,6 @@ class Environment:
                 Environment.DeleteTempOutput(node.GetTempOutputFiles(self))
                 Environment.MakeOutputDirs(node.GetOutputFiles(self))
 
-                # Build will change the mod time so set without checking for faster operation
-                input_metadata.Changed = True
-
                 if not node.Build(self):
                     success = False
 
