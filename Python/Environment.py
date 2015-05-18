@@ -252,7 +252,7 @@ class Environment:
                 print(tab + "      Changed: " + str(dep))
 
         # Have any of the implicit dependencies changed?
-        if not requires_build:
+        if not requires_build and input_metadata != None:
             for dep in input_metadata.ImplicitDeps:
                 (a, b) = self.ExecuteNodeBuild(dep, tab + "   ")
                 requires_build |= a
@@ -261,7 +261,7 @@ class Environment:
                     print(tab + "Implicit dependency changed: " + str(dep))
 
         # If the dependencies haven't changed, check to see if the node itself has been changed
-        if not requires_build and input_metadata.HasFileChanged(input_filename):
+        if not requires_build and input_metadata != None and input_metadata.HasFileChanged(input_filename):
             requires_build = True
             if self.Verbose:
                 print(tab + "Input has changed: " + input_filename + ", " + str(node))

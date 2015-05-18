@@ -118,6 +118,10 @@ class BuildMetadata:
 
     def AddToFileMap(self, filename):
 
+        # Ignore empty filenames
+        if filename == None:
+            return
+
         # Generate the CRC
         filename = Utils.NormalisePath(filename)
         crc = binascii.crc32(bytes(filename, "utf-8"))
@@ -134,6 +138,10 @@ class BuildMetadata:
         return self.FileMap[crc]
         
     def GetFileMetadata(self, target, filename):
+
+        # Ignore empty filenames
+        if filename == None:
+            return None
 
         # Create unique file metadata objects for each target so that builds
         # don't interfere with each other
