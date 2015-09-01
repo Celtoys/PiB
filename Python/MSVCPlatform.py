@@ -53,12 +53,16 @@ import BuildSystem
 
 
 # Locate the Visual Studio tools path using the environment
+# TODO: Using VS2010 first - how to specify override?
 VSToolsDir = os.getenv("VS100COMNTOOLS")
+if VSToolsDir == None:
+    VSToolsDir = os.getenv("VS120COMNTOOLS")
+if VSToolsDir == None:
+    VSToolsDir = os.getenv("VS110COMNTOOLS")
 if VSToolsDir == None:
     VSToolsDir = os.getenv("VS90COMNTOOLS")
 if VSToolsDir == None:
     VSToolsDir = os.getenv("VS80COMNTOOLS")
-
 
 
 # Locate the Visual Studio install path    
