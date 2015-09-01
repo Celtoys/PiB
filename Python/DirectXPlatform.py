@@ -3,6 +3,7 @@ import os
 import Utils
 import Process
 import BuildSystem
+import WindowsPlatform
 
 
 # Retrieve the installation directory from the environment
@@ -11,12 +12,22 @@ if "DXSDK_DIR" in os.environ:
     InstallDir = os.environ["DXSDK_DIR"]
 
 # Setup some common paths relative to that
-IncludeDir = os.path.join(InstallDir, "Include")
-x86LibDir = os.path.join(InstallDir, "Lib/x86")
-x64LibDir = os.path.join(InstallDir, "Lib/x64")
-x86BinDir = os.path.join(InstallDir, "Utilities/bin/x86")
-x64BinDir = os.path.join(InstallDir, "Utilities/bin/x64")
+if InstallDir != None:
+    IncludeDirs = os.path.join(InstallDir, "Include")
+    x86LibDir = os.path.join(InstallDir, "Lib/x86")
+    x64LibDir = os.path.join(InstallDir, "Lib/x64")
+    x86BinDir = os.path.join(InstallDir, "Utilities/bin/x86")
+    x64BinDir = os.path.join(InstallDir, "Utilities/bin/x64")
 
+# When no install directory has been found, either the SDK is not installed
+# or it's bundled as part of the later Windows 8+ SDK. Copy values from that
+# to cover those cases.
+else:
+    IncludeDirs = WindowsPlatform.IncludeDirs
+    x86LibDir = WindowsPlatform.x86LibDir
+    x64LibDir = WindowsPlatform.x64LibDir
+    x86BinDir = WindowsPlatform.x86BinDir
+    x64BinDir = WindowsPlatform.x64BinDir
 
 #
 # Usage: fxc <options> <files>
