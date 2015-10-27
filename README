@@ -10,7 +10,7 @@ For a more in-depth discussion of the origins of this build system, check out th
 
 To install, follow these two steps:
 
-	* Ensure the location of the PiB installation directory is in your PATH.
-	* Edit PiB.bat and point PYTHONDIR to the python installation you want to use.
+	* Add the location of the PiB.bat installation directory to the PATH.
+	* Ensure .py files are executed with a Python 3 interpreter.
 
 This project will be updated continuously as my needs for it change :)
