@@ -52,15 +52,15 @@ SDKVersions = [
 	#	"bin32"    : "bin\\x86",
 	#	"bin64"    : "bin\\x64"
 	#},
-	#{
-	#	"version"  : "8.1",
-	#	"install"  : "Windows Kits\\8.1",
-	#	"includes" : [ "include\\shared", "include\\um" ],
-	#	"lib32"    : "lib\\winv6.3\\um\\x86",
-	#	"lib64"    : "lib\\winv6.3\\um\\x64",
-	#	"bin32"    : "bin\\x86",
-	#	"bin64"    : "bin\\x64"
-	#}
+	{
+		"version"  : "8.1",
+		"install"  : "Windows Kits\\8.1",
+		"includes" : [ "include\\shared", "include\\um" ],
+		"lib32"    : "lib\\winv6.3\\um\\x86",
+		"lib64"    : "lib\\winv6.3\\um\\x64",
+		"bin32"    : "bin\\x86",
+		"bin64"    : "bin\\x64"
+	}
 ]
 
 
@@ -94,8 +94,6 @@ for sdk in reversed(SDKVersions):
 	if len(includes) == 0:
 		continue
 
-	print(includes)
-
 	# Get lib directories
 	lib32 = os.path.join(sdk_dir, sdk["lib32"])
 	if not os.path.exists(lib32):
@@ -120,5 +118,3 @@ for sdk in reversed(SDKVersions):
 	x86BinDir = bin32
 	x64BinDir = bin64
 	break
-
-print(SDKDir)
