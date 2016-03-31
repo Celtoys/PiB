@@ -163,7 +163,7 @@ class FXCompileOptions:
         cmdline = [ ]
         for define in defines:
             if isinstance(define, str):
-                cmdline += [ '/D' + str(define[0]) ]
+                cmdline += [ '/D' + str(define) ]
             else:
                 cmdline += [ '/D' + str(define[0]) + '=' + str(define[1])]
         return cmdline
