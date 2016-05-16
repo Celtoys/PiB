@@ -84,10 +84,12 @@ while VSInstallDir != None and VSInstallDir != "":
 # VC directories are a subdirectory of VS install
 VCInstallDir = None
 VCIncludeDir = None
+VCLibraryDir = None
 PlatformSDKIncludeDir = None
 if VSInstallDir != None:
     VCInstallDir = os.path.join(VSInstallDir, "VC")
     VCIncludeDir = os.path.join(VSInstallDir, "VC/include")
+    VCLibraryDir = os.path.join(VSInstallDir, "VC/lib")
     PlatformSDKIncludeDir = os.path.join(VSInstallDir, "VC/PlatformSDK/include")
 
 
