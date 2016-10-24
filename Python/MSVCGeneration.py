@@ -84,27 +84,26 @@ def ProjectHeader():
 
 
 vcproj_config = """		<Configuration
-			Name="%CONFIG%|Win32"
-			OutputDirectory="%OUTPUTDIR%"
-			IntermediateDirectory="%INTERDIR%"
-			ConfigurationType="0"
-			CharacterSet="1"
-			>
-			<Tool
-				Name="VCNMakeTool"
-				BuildCommandLine="%BUILD%"
-				ReBuildCommandLine="%REBUILD%"
-				CleanCommandLine="%CLEAN%"
-				Output="%OUTPUT%"
-				PreprocessorDefinitions=""
-				IncludeSearchPath=""
-				ForcedIncludes=""
-				AssemblySearchPath=""
-				ForcedUsingAssemblies=""
-				CompileAsManaged=""
-			/>
-		</Configuration>"""
-
+            Name="%CONFIG%|Win32"
+            OutputDirectory="%OUTPUTDIR%"
+            IntermediateDirectory="%INTERDIR%"
+            ConfigurationType="0"
+            CharacterSet="1"
+            >
+            <Tool
+                Name="VCNMakeTool"
+                BuildCommandLine="%BUILD%"
+                ReBuildCommandLine="%REBUILD%"
+                CleanCommandLine="%CLEAN%"
+                Output="%OUTPUT%"
+                PreprocessorDefinitions=""
+                IncludeSearchPath=""
+                ForcedIncludes=""
+                AssemblySearchPath=""
+                ForcedUsingAssemblies=""
+                CompileAsManaged=""
+            />
+        </Configuration>"""
 
 def CreateFolderLists(dict):
 
@@ -234,14 +233,16 @@ def VCGenerateProjectFile(env, name, files, output, targets=None, configs=None, 
     if configs == None:
         configs = env.Configs
 
-    # Figure out the relative location of the pibfile
-    pibfile = os.path.relpath(pibfile, vcproj_dir)
-    pibfile_dir = os.path.dirname(pibfile)
+    pibcmd = None
+    if pibfile != None:
+        # Figure out the relative location of the pibfile
+        pibfile = os.path.relpath(pibfile, vcproj_dir)
+        pibfile_dir = os.path.dirname(pibfile)
 
-    # Switch to the pibfile directory before launching the build
-    pibcmd = "pib -pf " + os.path.basename(pibfile) + " "
-    if pibfile_dir != "":
-        pibcmd = "cd " + pibfile_dir + " &amp; " + pibcmd       # '&' in XML-speak
+        # Switch to the pibfile directory before launching the build
+        pibcmd = "pib -pf " + os.path.basename(pibfile) + " "
+        if pibfile_dir != "":
+            pibcmd = "cd " + pibfile_dir + " &amp; " + pibcmd       # '&' in XML-speak
 
     # Construct target specification command-line option
     target_opt = ""
@@ -264,11 +265,18 @@ def VCGenerateProjectFile(env, name, files, output, targets=None, configs=None, 
     for name, config in env.Configs.items():
 
         xml = vcproj_config.replace("%CONFIG%", config.Name)
-        xml = xml.replace("%BUILD%", pibcmd + "-config " + config.CmdLineArg + target_opt)
-        xml = xml.replace("%REBUILD%", pibcmd + "rebuild " + "-config " + config.CmdLineArg + target_opt)
-        xml = xml.replace("%CLEAN%", pibcmd + "clean " + "-config " + config.CmdLineArg + target_opt)
+
         xml = xml.replace("%OUTPUTDIR%", os.path.relpath(config.OutputPath, vcproj_dir))
         xml = xml.replace("%INTERDIR%", os.path.relpath(config.IntermediatePath, vcproj_dir))
+
+        if pibcmd != None:
+            xml = xml.replace("%BUILD%", pibcmd + "-config " + config.CmdLineArg + target_opt)
+            xml = xml.replace("%REBUILD%", pibcmd + "rebuild " + "-config " + config.CmdLineArg + target_opt)
+            xml = xml.replace("%CLEAN%", pibcmd + "clean " + "-config " + config.CmdLineArg + target_opt)
+        else:
+            xml = xml.replace("%BUILD%", "")
+            xml = xml.replace("%REBUILD%", "")
+            xml = xml.replace("%CLEAN%", "")
 
         # Specify the output executable for debugging
         if output != None:
