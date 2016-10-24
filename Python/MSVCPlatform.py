@@ -483,7 +483,6 @@ class VCLinkOptions:
 
         # Initialise changes from debug
         self.InitDebug()
-        self.Debug = False
         self.Incremental = False
         self.LTCG = True
         self.UnrefSymbols = VCUnrefSymbols.ELIMINATE
