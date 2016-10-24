@@ -97,7 +97,7 @@ vcproj_config = """		<Configuration
                 CleanCommandLine="%CLEAN%"
                 Output="%OUTPUT%"
                 PreprocessorDefinitions=""
-                IncludeSearchPath=""
+                IncludeSearchPath="%INCLUDESEARCH%"
                 ForcedIncludes=""
                 AssemblySearchPath=""
                 ForcedUsingAssemblies=""
@@ -192,7 +192,7 @@ def DoesProjectNeedUpdating(vcproj_path, files):
 
 
 # Need: input files, configurations and args to run for configurations
-def VCGenerateProjectFile(env, name, files, output, targets=None, configs=None, replacements = [ ], pibfile = "pibfile"):
+def VCGenerateProjectFile(env, name, files, output, targets=None, configs=None, replacements = [ ], pibfile = "pibfile", include_search = [ ]):
 
     # Promote target to a list
     if targets != None and type(targets) != type([]):
@@ -250,6 +250,11 @@ def VCGenerateProjectFile(env, name, files, output, targets=None, configs=None, 
         for target in targets:
             target_opt += " -target " + target
 
+    # Concatenate include search paths
+    include_search_str = ""
+    for include in include_search:
+        include_search_str += include + ";"
+
     f = open(vcproj_path, "w")
 
     print('<?xml version="1.0" encoding="Windows-1252"?>', file=f)
@@ -268,6 +273,7 @@ def VCGenerateProjectFile(env, name, files, output, targets=None, configs=None, 
 
         xml = xml.replace("%OUTPUTDIR%", os.path.relpath(config.OutputPath, vcproj_dir))
         xml = xml.replace("%INTERDIR%", os.path.relpath(config.IntermediatePath, vcproj_dir))
+        xml = xml.replace("%INCLUDESEARCH%", include_search_str)
 
         if pibcmd != None:
             xml = xml.replace("%BUILD%", pibcmd + "-config " + config.CmdLineArg + target_opt)
