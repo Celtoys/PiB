@@ -281,6 +281,7 @@ class VCCompileOptions:
         self.DetectBufferOverruns = True
         self.Optimisations = VCOptimisations.DISABLE
         self.WholeProgramOptimisation = False
+        self.EnableIntrinsicFunctions = False
         self.CRTType = VCCRTType.MT_DEBUG
         self.Alignment = 8
         self.Defines = [ 'WIN32', '_WINDOWS' ]
@@ -300,6 +301,7 @@ class VCCompileOptions:
         self.DetectBufferOverruns = False
         self.Optimisations = VCOptimisations.SPEED
         self.WholeProgramOptimisation = True
+        self.EnableIntrinsicFunctions = True
         self.CRTType = VCCRTType.MT
         self.Defines.extend( [ 'NDEBUG' ])
         self.UpdateCommandLine()
@@ -358,6 +360,9 @@ class VCCompileOptions:
 
         if self.WholeProgramOptimisation:
             cmdline += [ "/GL" ]
+
+        if self.EnableIntrinsicFunctions:
+            cmdline += [ "/Oi" ]
 
         for define in self.Defines:
             cmdline += [ '/D', define ]
