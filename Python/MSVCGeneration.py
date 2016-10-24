@@ -398,7 +398,7 @@ def ReadProjectGUID(vcproj_path):
                 return guid
 
 
-def VCGenerateSolutionFile(env, name, projects):
+def VCGenerateSolutionFile(env, name, add_dependencies, projects):
 
     sln_path = name + ".sln"
 
@@ -434,7 +434,7 @@ def VCGenerateSolutionFile(env, name, projects):
         print('Project("{' + str(uuid.uuid1()).upper() + '}") = "' + vcproj_name + '", "' + vcproj_path + '", "' + guids[name] + '"', file=f)
 
         # Ensure the Solution build order matches the order in which projects were passed
-        if prev_guid != None:
+        if add_dependencies and prev_guid != None:
             print("\tProjectSection(ProjectDependencies) = postProject", file=f)
             print("\t\t" + prev_guid + " = " + prev_guid, file=f)
             print("\tEndProjectSection", file=f)
