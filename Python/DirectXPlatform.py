@@ -221,10 +221,12 @@ class FXCompileNode (BuildSystem.Node):
     
     def GetOutputFiles(self, env):
 
-        # Get the relocated path minus extension
-        path = os.path.splitext(self.Path)[0]
+        # Get the relocated path with postfix before extension
+        split_path = os.path.splitext(self.Path)
+        path = split_path[0]
         path = os.path.join(env.CurrentConfig.OutputPath, path)
         path += self.PathPostfix
+        path += split_path[1]
         
         # Start a local command-line for use by Build
         self.BuildCommandLine = [ ]
