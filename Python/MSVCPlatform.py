@@ -209,8 +209,11 @@ VCBaseConfig = Utils.enum(
 
 VCArchitecture = Utils.enum(
     DEFAULT = None,
-    SSE = '/arch:sse',
-    SSE2 = '/arch:sse2'
+    IA32 = '/arch:IA32',
+    SSE = '/arch:SSE',
+    SSE2 = '/arch:SSE2',
+    AVX = '/arch:AVX',
+    AVX2 = '/arch:AVX2'
 )
 
 VCFloatingPoint = Utils.enum(
