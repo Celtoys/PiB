@@ -109,7 +109,8 @@ class BuildNode (BuildSystem.Node):
         Utils.ShowCmdLine(env, cmdline)
 
         # Launch Wave with a dependency scanner and wait for it to finish
-        scanner = Utils.IncludeScanner(env, '"', [ "<" ], lambda line, length: line.split("(")[1].rstrip()[:-1])
+        scanner = Utils.LineScanner(env)
+        scanner.AddLineParser("Includes", '"', [ "<" ], lambda line, length: line.split("(")[1].rstrip()[:-1])
         process = Process.OpenPiped(cmdline, env.EnvironmentVariables)
         Process.WaitForPipeOutput(process, scanner)
 

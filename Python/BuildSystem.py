@@ -44,6 +44,7 @@ class FileMetadata:
 
         self.ModTime = 0
         self.ImplicitDeps = [ ]
+        self.ImplicitOutputs = [ ]
 
     def HasFileChanged(self, filename):
 
@@ -70,10 +71,21 @@ class FileMetadata:
             # Ensure each dependency has a metadata entry
             env.GetFileMetadata(filename)
             self.ImplicitDeps.append(filenode)
+    
+    def SetImplicitOutputs(self, env, outputs):
+
+        # Create file nodes for each dependency
+        self.ImplicitOutputs = [ ]
+        for filename in set(outputs):
+            filenode = env.NewFile(filename)
+
+            # Ensure each dependency has a metadata entry
+            env.GetFileMetadata(filename)
+            self.ImplicitOutputs.append(filenode)
 
     def __repr__(self):
 
-        return str(self.ModTime) + "->" + str(self.ImplicitDeps)
+        return str(self.ModTime) + "->" + str(self.ImplicitDeps) + "->" + str(self.ImplicitOutputs)
 
 
 #

@@ -655,7 +655,8 @@ class VCCompileNode (BuildSystem.Node):
         Utils.ShowCmdLine(env, cmdline)
 
         # Create the include scanner and launch the compiler
-        scanner = Utils.IncludeScanner(env, "Note: including file:", None, lambda line, length: line[length:].lstrip())
+        scanner = Utils.LineScanner(env)
+        scanner.AddLineParser("Includes", "Note: including file:", None, lambda line, length: line[length:].lstrip())
         process = Process.OpenPiped(cmdline, env.EnvironmentVariables)
         Process.PollPipeOutput(process, scanner)
 
@@ -745,7 +746,8 @@ class VCLinkNode (BuildSystem.Node):
         #
         # Create the lib scanner and run the link process
         #
-        scanner = Utils.IncludeScanner(env, "Searching ", [ "Searching libraries", "Finished searching libraries" ], lambda line, length: line[length:-1])
+        scanner = Utils.LineScanner(env)
+        scanner.AddLineParser("Includes", "Searching ", [ "Searching libraries", "Finished searching libraries" ], lambda line, length: line[length:-1])
         process = Process.OpenPiped(cmdline, env.EnvironmentVariables)
         Process.PollPipeOutput(process, scanner)
 

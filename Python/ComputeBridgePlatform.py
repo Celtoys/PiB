@@ -97,7 +97,8 @@ class BuildNode (BuildSystem.Node):
         Utils.ShowCmdLine(env, cmdline)
 
         # Launch cbpp with a dependency scanner and wait for it to finish
-        scanner = Utils.IncludeScanner(env, 'cpp: included "', None, lambda line, length: line[length:-1])
+        scanner = Utils.LineScanner(env)
+        scanner.AddLineParser("Includes", 'cpp: included "', None, lambda line, length: line[length:-1])
         process = Process.OpenPiped(cmdline, env.EnvironmentVariables)
         Process.WaitForPipeOutput(process, scanner)
 

@@ -161,6 +161,25 @@ def GetSysArgvProperties(name, default=None):
     return props
 
 
+class LineParser:
+
+    def __init__(self, output_name, prefix, ignore_prefixes, parser):
+
+        self.OutputName = output_name
+        self.Prefix = prefix
+        self.IgnorePrefixes = ignore_prefixes
+        self.Parser = parser
+    
+    def IgnoreLine(self, line):
+
+        if self.IgnorePrefixes:
+            for prefix in self.IgnorePrefixes:
+                if line.startswith(prefix):
+                    return True
+        
+        return False
+
+
 #
 # This reads each line of output from a compiler and decides whether to print it or not.
 # If the line reports what file is being included by the .c/.cpp file then it's not printed
@@ -168,15 +187,19 @@ def GetSysArgvProperties(name, default=None):
 #
 # NOTE: This is the only util in this file to depend on Environment.
 #
-class IncludeScanner:
+class LineScanner():
 
-    def __init__(self, env, prefix, ignore_prefixes, parser):
+    def __init__(self, env):
 
-        self.Includes = set()
         self.Env = env
-        self.Prefix = prefix
-        self.IgnorePrefixes = ignore_prefixes
-        self.Parser = parser
+        self.LineParsers = []
+        #self.AddLineParser("Includes", prefix, ignore_prefixes, parser)
+    
+    def AddLineParser(self, output_name, prefix, ignore_prefixes, parser):
+
+        # Add to the list and create an output field in the class instance
+        self.LineParsers.append(LineParser(output_name, prefix, ignore_prefixes, parser))
+        setattr(self, output_name, set())
 
     def __call__(self, line):
 
@@ -187,28 +210,25 @@ class IncludeScanner:
         line = line.strip("\r\n")
         line = line.lstrip()
 
-        # Prioritise checking for ignored lines
-        if self.IgnoreLine(line):
-            return
+        # Check each parser
+        print_line = True
+        for line_parser in self.LineParsers:
 
-        # Scan for included files and add to the list
-        elif line.startswith(self.Prefix):
-            #path = line[len(self.Prefix):self.StripOffset].lstrip()
-            path = self.Parser(line, len(self.Prefix))
-            path = NormalisePath(path)
-            self.Includes.add(path)
-            #self.Includes.add(self.Env.NewFile(path))
-            #self.Includes.append(self.Env.NewFile(path))
-
-        elif not self.Env.NoToolOutput:
+            # Prioritise checking for ignored lines
+            if line_parser.IgnoreLine(line):
+                print_line = False
+                break
+            
+            # Scan for included files and add to the list
+            if line.startswith(line_parser.Prefix):
+                path = line_parser.Parser(line, len(line_parser.Prefix))
+                path = NormalisePath(path)
+                getattr(self, line_parser.OutputName).add(path)
+                print_line = False
+        
+        # If no parsers have filtered the line, print it
+        if print_line and not self.Env.NoToolOutput:
             print(line)
-    
-    def IgnoreLine(self, line):
-
-        if self.IgnorePrefixes:
-            for prefix in self.IgnorePrefixes:
-                if line.startswith(prefix):
-                    return True
 
         return False
 
@@ -221,6 +241,7 @@ def ShowCmdLine(env, cmdline):
         for cmd in cmdline:
             print(cmd, end=" ")
         print("")
+
 
 def ExecPibfile(pibfile, global_symbols = { }):
 

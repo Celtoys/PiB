@@ -275,6 +275,15 @@ class Environment:
                         print(tab + "Output file doesn't exist: " + output_file)
                     break
 
+        # If any implicit output files don't exist and no build is required, we must build!
+        if not requires_build and input_metadata != None:
+            for output_file in input_metadata.ImplicitOutputs:
+                output_filename = self.GetFilename(output_file.CRC)
+                if not os.path.exists(output_filename):
+                    requires_build = True
+                    if self.Verbose:
+                        print(tab + "Implicit output file doesn't exist: " + output_filename)
+
         # At the last minute, cancel any builds if they're excluded by the input filter
         if requires_build and self.BuildInputFilter != None:
             input_filename = os.path.realpath(input_filename).lower()
@@ -303,11 +312,22 @@ class Environment:
 
         # Only clean if there is a build step for this node
         if Utils.ObjectHasMethod(node, "Build"):
+
+            # Clean output files
             output_files = node.GetOutputFiles(self)
             for file in output_files:
                 if self.Verbose:
                     print("Deleting: " + file)
                 Utils.RemoveFile(file)
+            
+            # Clean implicit output files
+            input_metadata = self.GetFileMetadata(node.GetInputFile(self))
+            if input_metadata:
+                for output_file in input_metadata.ImplicitOutputs:
+                    output_filename = self.GetFilename(output_file.CRC)
+                    if self.Verbose:
+                        print("Deleting: " + file)
+                    Utils.RemoveFile(output_filename)
     
     def Build(self, build_graphs, target = None):
 

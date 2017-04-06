@@ -200,7 +200,8 @@ class FXCompileNode (BuildSystem.Node):
         Utils.ShowCmdLine(env, cmdline)
 
         # Create the include scanner and launch the compiler
-        scanner = Utils.IncludeScanner(env, "Resolved to [", [ "Opening file [", "Current working dir [" ], lambda line, length: line[length:-1].lstrip())
+        scanner = Utils.LineScanner(env)
+        scanner.AddLineParser("Includes", "Resolved to [", [ "Opening file [", "Current working dir [" ], lambda line, length: line[length:-1].lstrip())
         process = Process.OpenPiped(cmdline, env.EnvironmentVariables)
         Process.WaitForPipeOutput(process, scanner)
 
@@ -219,7 +220,7 @@ class FXCompileNode (BuildSystem.Node):
         self.BuildCommandLine += [ option + file ]
         return [ file ]
     
-    def GetOutputFiles(self, env):
+    def _GetOutputFiles(self, env, opts):
 
         # Get the relocated path with postfix before extension
         split_path = os.path.splitext(self.Path)
@@ -233,7 +234,6 @@ class FXCompileNode (BuildSystem.Node):
 
         # Add whatever output files have been specified
         files = [ ]
-        opts = env.CurrentConfig.FXCompileOptions
         if opts.OutputObject:
             files += self.AddOutputFile('/Fo', path + ".sobj")
         if opts.OutputAsmHex:
@@ -246,6 +246,10 @@ class FXCompileNode (BuildSystem.Node):
             files += self.AddOutputFile('/Fe', path + ".elog")
 
         return files
+
+    def GetOutputFiles(self, env):
+
+        return self._GetOutputFiles(env, env.CurrentConfig.FXCompileOptions)
 
     def GetTempOutputFiles(self, env):
 
