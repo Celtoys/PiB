@@ -243,8 +243,9 @@ def ShowCmdLine(env, cmdline):
         print("")
 
 
-def ExecPibfile(pibfile, global_symbols = { }):
-
+def ExecPibfile(pibfile, global_symbols = None):
+    if global_symbols is None:
+        global_symbols = {}
     # Load the build script file
     if not os.path.exists(pibfile):
         print("ERROR: No '" + pibfile + "' found")

@@ -171,8 +171,10 @@ class FXCompileOptions:
 
 class FXCompileNode (BuildSystem.Node):
 
-    def __init__(self, path, profile, path_postfix = "", defines = [ ], entry_point = None):
-
+    def __init__(self, path, profile, path_postfix = "", defines = None, entry_point = None):
+        
+        if defines is None:
+            defines = []
         super().__init__()
         self.Path = path
         self.Profile = profile

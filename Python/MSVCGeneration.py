@@ -192,8 +192,12 @@ def DoesProjectNeedUpdating(vcproj_path, files):
 
 
 # Need: input files, configurations and args to run for configurations
-def VCGenerateProjectFile(env, name, files, output, targets=None, configs=None, replacements = [ ], pibfile = "pibfile", include_search = [ ]):
+def VCGenerateProjectFile(env, name, files, output, targets=None, configs=None, replacements = None, pibfile = "pibfile", include_search = None):
 
+    if replacements is None:
+        replacements = []
+    if include_search is None:
+        include_search = []
     # Promote target to a list
     if targets != None and type(targets) != type([]):
         targets = [ targets ]

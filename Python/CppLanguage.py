@@ -11,8 +11,10 @@ CppLinkWeakDep = True
 
 class CppBuild:
     
-    def __init__(self, env, dirs, target, ext_libs = [], build = True):
+    def __init__(self, env, dirs, target, ext_libs = None, build = True):
 
+        if ext_libs is None:
+            ext_libs = []
         # Gather source/header files
         self.cpp_files = []
         self.hpp_files = []
