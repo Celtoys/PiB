@@ -28,8 +28,10 @@ class ShaderCompileOptions(FXCompileOptions):
 
 class ShaderCompileNode(FXCompileNode):
 
-    def __init__(self, path, profile, path_postfix="", defines=[], entry_point=None):
+    def __init__(self, path, profile, path_postfix="", defines=None, entry_point=None):
 
+        if defines is None:
+            defines = []
         super().__init__(path, profile, path_postfix, defines, entry_point)
 
     def Build(self, env):

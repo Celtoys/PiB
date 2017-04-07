@@ -138,12 +138,18 @@ class Environment:
 
         return MSVCPlatform.VCCompileNode(filename, override_cpp_opts)
 
-    def Link(self, filename, obj_files, lib_files = [], weak_lib_files = []):
+    def Link(self, filename, obj_files, lib_files = None, weak_lib_files = None):
 
+        if lib_files is None:
+            lib_files = []
+        if weak_lib_files is None:
+            weak_lib_files = []
         return MSVCPlatform.VCLinkNode(filename, obj_files, lib_files, weak_lib_files)
 
-    def Lib(self, filename, dependencies, lib_files = []):
+    def Lib(self, filename, dependencies, lib_files = None):
 
+        if lib_files is None:
+            lib_files = []
         return MSVCPlatform.VCLibNode(filename, dependencies, lib_files)
     
     def CopyFile(self, source, dest_path):
