@@ -52,6 +52,10 @@
 
 import os
 import sys
+
+# Fix for upgrade to 3.6 where relative imports no longer work
+sys.path.append(os.path.dirname(os.path.realpath(__file__)))
+
 import Utils
 
 
