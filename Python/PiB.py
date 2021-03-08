@@ -57,8 +57,19 @@ import sys
 sys.path.append(os.path.dirname(os.path.realpath(__file__)))
 
 import Utils
+#import cProfile
+#import pstats
+from datetime import datetime
 
+start_time = datetime.now()
 
 # See if the caller wants to use a custom build script name/location
 pibfile = Utils.GetSysArgvProperty("-pf", "pibfile")
+#cProfile.run('Utils.ExecPibfile(pibfile)', sort=pstats.SortKey.CUMULATIVE)
 Utils.ExecPibfile(pibfile)
+
+# Print closing message with time elapsed
+time_elapsed = (datetime.now() - start_time).total_seconds()
+minutes, seconds = divmod(int(time_elapsed), 60)
+milliseconds = int((time_elapsed - seconds) * 1000)
+print(f"Done within {minutes}:{seconds}.{milliseconds}")
