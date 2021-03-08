@@ -132,13 +132,24 @@ class CppScanNode (BuildSystem.Node):
         # Construct the command-line
         cmdline = [ _MakePath("clscan.exe") ]
         cmdline += [ input_file ]
-        cmdline += [ "-output", output_files[0] ]
-        cmdline += [ "-ast_log", output_files[1] ]
-        cmdline += [ "-spec_log", output_files[2] ]
+        cmdline += [ "--output", output_files[0] ]
+        cmdline += [ "--ast_log", output_files[1] ]
+        cmdline += [ "--spec_log", output_files[2] ]
+        cmdline += [ "--" ]
+        cmdline += [ "-fdiagnostics-format=msvc" ]
+        cmdline += [ "-D__clcpp_parse__" ]
+        cmdline += [ "-m32" ]
+        cmdline += [ "-fms-extensions" ]
+        cmdline += [ "-fms-compatibility" ]
+        cmdline += [ "-mms-bitfields" ]
+        cmdline += [ "-fdelayed-template-parsing" ]
+        cmdline += [ "-std=c++17" ]
+        cmdline += [ "-fno-rtti" ]
+        cmdline += [ "-Wno-microsoft-enum-forward-reference" ]
         for path in self.SysIncludePaths:
             cmdline += [ "-isystem", path ]
         for path in self.IncludePaths:
-            cmdline += [ "-i", path ]
+            cmdline += [ "-I", path ]
         for define in self.Defines:
             cmdline += [ "-D", define ]
         Utils.ShowCmdLine(env, cmdline)
