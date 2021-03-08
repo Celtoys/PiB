@@ -45,21 +45,46 @@ class FileMetadata:
         self.ModTime = 0
         self.ImplicitDeps = [ ]
         self.ImplicitOutputs = [ ]
+        self.CachedModTime = None
+
+    # Custom state implementations for the pickle module to ignore transient data
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        del state["CachedModTime"]
+        return state
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+        self.CachedModTime = None
 
     def HasFileChanged(self, filename):
 
+        # As calls into the OS for file times are expensive cache the result as much as possible
+        if self.CachedModTime == None:
+
+            # Modtime get will only succeed if the file exists
+            try:
+                self.CachedModTime = os.path.getmtime(filename)
+            except:
         # If the file no longer exists, it has changed
-        if not os.path.exists(filename):
+                # Note this path will force the cached mod time to NOT update and call getmtime
+                # on each evaluation. This is safe and no slower than the original implementation
+                # and only triggered if you delete output files.
             return True
 
         # Compare modification times
-        mod_time = os.path.getmtime(filename)
-        return mod_time != self.ModTime
+        return self.CachedModTime != self.ModTime
 
     def UpdateModTime(self, filename):
 
-        if os.path.exists(filename):
+        if self.CachedModTime != None:
+            self.ModTime = self.CachedModTime
+        else:
+            # Only updates if the file exists
+            # Faster than first checking to see if the file exists
+            try:
             self.ModTime = os.path.getmtime(filename)
+            except:
+                pass
 
     def SetImplicitDeps(self, env, deps):
 

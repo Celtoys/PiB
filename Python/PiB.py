@@ -27,12 +27,10 @@
 #
 # TODO:
 #
-#   Look into cPickle
 #   Instead of using input/output FILES, use NODES.
 #   Cache explicit dependencies and mix with Windows USN Journal
 #   Are configurations enough? Are they too much?
 #   Conversion of command-line options to the command-line is a little error-prone
-#   vcproj/sln clean?
 #   Does the code deal with #include "file.cpp"?
 #   Needs to be simpler! I'm sure I've missed some key opportunities in the
 #    dependency graph stuff
