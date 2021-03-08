@@ -17,7 +17,7 @@ class CppBuild:
         self.cpp_files = []
         self.hpp_files = []
         for dir in dirs:
-            if dir.endswith(".cpp") or dir.endswith("*.c"):
+            if dir.endswith(".cpp") or dir.endswith(".c"):
                 self.cpp_files += [ dir ]
             elif dir.endswith(".h"):
                 self.hpp_files += [ dir ]
