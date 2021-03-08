@@ -31,6 +31,20 @@ import sys
 import errno
 import fnmatch
 import shutil
+import re
+import glob
+
+
+#
+# Used to determine whether ANSI colour codes can be used.
+# A *seriously* hacky means of determining if this is being run through the bash shell...
+#
+import subprocess
+try:
+    subprocess.check_output('ls')
+    RunningFromBash = True
+except:
+    RunningFromBash = False
 
 
 #
@@ -55,6 +69,16 @@ def NormalisePath(path):
     path = os.path.normpath(path)
     path = os.path.normcase(path)
     return path
+
+
+#
+# Given the filename of a file that exists ask the OS how it references it. This only
+# matters on Windows where filenames are case-insensitive but Windows preserves case
+# in its directory listing.
+#
+def GetOSFilename(path):
+    r = glob.glob(re.sub(r'([^:/\\])(?=[/\\]|$)', r'[\1]', path))
+    return r and r[0] or path
 
 
 #
@@ -180,12 +204,54 @@ class LineParser:
         return False
 
 
+PrintFileRegex = re.compile(r"(\w:[/\\])?([/\\]?[\w\.\.])+(\.\w+)")
+def Print(env, line):
+
+    if env.NoToolOutput:
+        return
+
+    if line == "":
+        return
+
+    if RunningFromBash:
+
+        # https://bluesock.org/~willkg/dev/ansi.html
+        Black = "\033[30m"
+        Orange = "\033[38;2;255;165;0m"
+        Red = "\033[31m"
+        Cyan = "\033[36m"
+        End = "\033[0m"
+        Bold = "\033[1m"
+
+        # Scan for filenames
+        matches = PrintFileRegex.finditer(line)
+        if matches:
+            for match in matches:
+                filename = match.group(0)
+
+                # Colour filenames
+                line = line.replace(filename, f"{Cyan}" + filename + f"{End}")
+
+                # Replace filenames with correct case as reported by the OS. This is to stop VSCode opening
+                # multiple copies of the same file when you click on the output.
+                # Bug: https://github.com/Microsoft/vscode/issues/12448
+                if os.path.exists(filename):
+                    os_filename = GetOSFilename(filename)
+                    line = line.replace(filename, os_filename)
+
+        # Colour keywords
+        line = line.replace("error", f"{Bold}{Red}error{End}")
+        line = line.replace("ERROR", f"{Bold}{Red}ERROR{End}")
+        line = line.replace("warning", f"{Orange}warning{End}")
+        line = line.replace("WARNING", f"{Orange}WARNING{End}")
+
+    print(line)
+
+
 #
 # This reads each line of output from a compiler and decides whether to print it or not.
 # If the line reports what file is being included by the .c/.cpp file then it's not printed
 # and instead stored locally so that it can report all the files included.
-#
-# NOTE: This is the only util in this file to depend on Environment.
 #
 class LineScanner():
 
@@ -193,7 +259,6 @@ class LineScanner():
 
         self.Env = env
         self.LineParsers = []
-        #self.AddLineParser("Includes", prefix, ignore_prefixes, parser)
     
     def AddLineParser(self, output_name, prefix, ignore_prefixes, parser):
 
@@ -227,8 +292,8 @@ class LineScanner():
                 print_line = False
         
         # If no parsers have filtered the line, print it
-        if print_line and not self.Env.NoToolOutput:
-            print(line)
+        if print_line:
+            Print(self.Env, line)
 
         return False
 

@@ -30,7 +30,7 @@ class CppExportNode(BuildSystem.Node):
         
         input_file = self.GetInputFile(env)
         output_file = self.GetOutputFiles(env)[0]
-        print("clexport: " + os.path.basename(output_file))
+        Utils.Print(env, "clexport: " + os.path.basename(output_file))
 
         # Construct the command-line
         cmdline = [ _MakePath("clexport.exe") ]
@@ -45,7 +45,7 @@ class CppExportNode(BuildSystem.Node):
         process = Process.OpenPiped(cmdline)
         output = Process.WaitForPipeOutput(process)
         if not env.NoToolOutput:
-            print(output)
+            Utils.Print(env, output)
 
         return process.returncode == 0
 
@@ -75,7 +75,7 @@ class MergeNode (BuildSystem.Node):
     def Build(self, env):
 
         output_file = self.GetOutputFiles(env)[0]
-        print("clmerge: " + os.path.basename(output_file))
+        Utils.Print(env, "clmerge: " + os.path.basename(output_file))
 
         # Construct the command-line
         cmdline = [ _MakePath("clmerge.exe") ]
@@ -89,7 +89,7 @@ class MergeNode (BuildSystem.Node):
         process = Process.OpenPiped(cmdline)
         output = Process.WaitForPipeOutput(process)
         if not env.NoToolOutput:
-            print(output)
+            Utils.Print(env, output)
 
         return process.returncode == 0
 
@@ -127,7 +127,7 @@ class CppScanNode (BuildSystem.Node):
 
         input_file = self.GetInputFile(env)
         output_files = self.GetOutputFiles(env)
-        print("clscan: " + os.path.basename(input_file))
+        Utils.Print(env, "clscan: " + Utils.GetOSFilename(os.path.basename(input_file)))
 
         # Construct the command-line
         cmdline = [ _MakePath("clscan.exe") ]

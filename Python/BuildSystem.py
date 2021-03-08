@@ -277,15 +277,15 @@ class CopyNode (Node):
     def Build(self, env):
 
         if not os.path.exists(self.Source):
-            print("   FAILED: Source file doesn't exist")
+            Utils.Print(env, "   ERROR: Source file doesn't exist")
             return False
 
-        print("Copying from " + self.Source + " to " + self.Destination)
+        Utils.Print(env, "Copying from " + self.Source + " to " + self.Destination)
         if Utils.Makedirs(os.path.dirname(self.Destination)) == False:
-            print("   FAILED: destination directories couldn't be created")
+            Utils.Print(env, "   ERROR: destination directories couldn't be created")
             return False
         if Utils.CopyFile(self.Source, self.Destination) == False:
-            print("   FAILED: Copy operation failed")
+            Utils.Print(env, "   ERROR: Copy operation failed")
             return False
 
         return True

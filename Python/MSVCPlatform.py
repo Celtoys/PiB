@@ -722,7 +722,7 @@ class VCLinkNode (BuildSystem.Node):
     def Build(self, env):
 
         output_files = self.GetOutputFiles(env)
-        print("Linking: " + output_files[0])
+        Utils.Print(env, "Linking: " + output_files[0] + "\n")
 
         # Construct the command-line
         cmdline = [ "link.exe" ] + env.CurrentConfig.LinkOptions.CommandLine
@@ -840,14 +840,14 @@ class VCLibNode (BuildSystem.Node):
         cmdline += [ '/OUT:' + output_files[0] ]
         cmdline += [ dep.GetOutputFiles(env)[0] for dep in self.Dependencies ]
         cmdline += [ dep.GetOutputFiles(env)[0] for dep in self.LibFiles ]
-        print("Librarian: " + output_files[0])
+        Utils.Print(env, "Librarian: " + output_files[0])
         Utils.ShowCmdLine(env, cmdline)
 
         # Run the librarian process
         process = Process.OpenPiped(cmdline, env.EnvironmentVariables)
         output = Process.WaitForPipeOutput(process)
         if not env.NoToolOutput:
-            print(output)
+            Utils.Print(env, output)
 
         return process.returncode == 0
 
