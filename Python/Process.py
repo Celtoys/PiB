@@ -49,7 +49,13 @@ def OpenPiped(args, env = None):
 
     # Send output to a pipe, push stderr through stdout to ensure they're ordered correctly
     #print (args)
-    return subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=env)
+    try:
+        output = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=env)
+    except:
+        print(args)
+        raise
+
+    return output
 
 
 def WaitForPipeOutput(process, line_handler=None):
@@ -85,20 +91,17 @@ def WaitForPipeOutput(process, line_handler=None):
         return bytearray(output).decode()
 
 
-#
-# TODO: This function has SEVERE problems capturing output - sometimes it
-# early-aborts before receiving output, sometimes it doesn't. The problem is
-# time-based and likely to be a threading issue. NEED TO WRITE A CUSTOM
-# VERSION TO HANDLE LONG PERIODS OF OUTPUT!
-#
 def PollPipeOutput(process, line_handler):
 
-    # Loop while the process is running
-    while process.poll() is None:
+    # Iteration on readline stalls until the next line immediately comes through. It also ensures all lines are read from the
+    # process until shutdown.
+    for line in iter(process.stdout.readline, b""):
 
         # Note that the output from stdout is a bytearray and Python 3.0 strings are now Unicode
         # Need to "decode" the byte array: http://stackoverflow.com/questions/606191/convert-byte-array-to-python-string
-        line = process.stdout.readline()
         line = bytearray(line).decode()
-
         line_handler(line)
+
+    # Return exit code
+    process.stdout.close()
+    return process.wait()
