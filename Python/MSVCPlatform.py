@@ -66,15 +66,15 @@ def GetVSInstallDir(vs_tools_dir):
     while vs_install_dir != None and vs_install_dir != "":
         split_path = os.path.split(vs_install_dir)
 
-    # Detect infinite loop
+        # Detect infinite loop
         if vs_install_dir == split_path[0]:
-        print("ERROR: Visual Studio Tools path is not formatted as expected")
-        VSInstallDir = None
-        break
+            print("ERROR: Visual Studio Tools path is not formatted as expected")
+            VSInstallDir = None
+            break
 
         vs_install_dir = split_path[0]
-    if split_path[1] == "Common7":
-        break
+        if split_path[1] == "Common7":
+            break
 
     return vs_install_dir
 
@@ -123,11 +123,11 @@ if VSToolsDir == None:
 
     VSInstallDir = GetVSInstallDir(VSToolsDir)
 
-# VC directories are a subdirectory of VS install
-if VSInstallDir != None:
+    # VC directories are a subdirectory of VS install
+    if VSInstallDir != None:
         VCVarsPath = os.path.join(VSInstallDir, "VC/vcvarsall.bat")
-    VCIncludeDir = os.path.join(VSInstallDir, "VC/include")
-    VCLibraryDir = os.path.join(VSInstallDir, "VC/lib")
+        VCIncludeDir = os.path.join(VSInstallDir, "VC/include")
+        VCLibraryDir = os.path.join(VSInstallDir, "VC/lib")
 
 # Show chosen environment
 if "-msvc_show_env" in sys.argv:
@@ -153,7 +153,7 @@ if VSToolsDir == None:
 # resulting environment for use later when calling cl.exe.
 #
 def GetVisualCEnv():
-    
+
     if VSInstallDir == None:
         print("ERROR: Visual Studio install directory not detected")
         return None
@@ -372,7 +372,7 @@ class VCCompileOptions:
 
         if self.NoLogo:
             cmdline += [ '/nologo' ]
-        
+
         cmdline += [ "/W" + str(self.WarningLevel) ]
         cmdline += [ self.CRTType ]
 
@@ -421,10 +421,10 @@ class VCCompileOptions:
 
         for include in self.IncludePaths:
             cmdline += [ '/I', include ]
-        
+
         if self.ReportClassLayout:
             cmdline += [ '/d1reportAllClassLayout' ]
-        
+
         for cls in self.ReportSingleClassLayout:
             cmdline += [ '/d1reportSingleClassLayout' + cls ]
 
@@ -553,7 +553,7 @@ class VCLinkOptions:
 
         if self.SafeSEH:
             cmdline += [ "/SAFESEH" ]
-        
+
         if self.Debug:
             cmdline += [ "/DEBUG" ]
 
@@ -768,7 +768,7 @@ class VCLinkNode (BuildSystem.Node):
 
         super().__init__()
         self.Path = path
-        
+
         # Object files are explicit dependencies, lib files are implicit, scanned during output
         self.Dependencies = obj_files
         self.LibFiles = lib_files
@@ -866,7 +866,7 @@ class VCLinkNode (BuildSystem.Node):
             files += [ path + ".ilk" ]
 
         return files
-    
+
     def __repr__(self):
 
         return "LINK: " + self.Path

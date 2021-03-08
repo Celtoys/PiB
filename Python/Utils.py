@@ -193,14 +193,14 @@ class LineParser:
         self.Prefix = prefix
         self.IgnorePrefixes = ignore_prefixes
         self.Parser = parser
-    
+
     def IgnoreLine(self, line):
 
         if self.IgnorePrefixes:
             for prefix in self.IgnorePrefixes:
                 if line.startswith(prefix):
                     return True
-        
+
         return False
 
 
@@ -259,7 +259,7 @@ class LineScanner():
 
         self.Env = env
         self.LineParsers = []
-    
+
     def AddLineParser(self, output_name, prefix, ignore_prefixes, parser):
 
         # Add to the list and create an output field in the class instance
@@ -283,14 +283,14 @@ class LineScanner():
             if line_parser.IgnoreLine(line):
                 print_line = False
                 break
-            
+
             # Scan for included files and add to the list
             if line.startswith(line_parser.Prefix):
                 path = line_parser.Parser(line, len(line_parser.Prefix))
                 path = NormalisePath(path)
                 getattr(self, line_parser.OutputName).add(path)
                 print_line = False
-        
+
         # If no parsers have filtered the line, print it
         if print_line:
             Print(self.Env, line)
@@ -299,10 +299,10 @@ class LineScanner():
 
 
 def ShowCmdLine(env, cmdline):
-    
+
     if env.ShowCmdLine:
         print(cmdline)
-        
+
         for cmd in cmdline:
             print(cmd, end=" ")
         print("")
@@ -340,7 +340,7 @@ if env == None:
     """
     prologue_compiled = compile(prologue, "<prologue>", "exec")
 
-    # Compile the shutdown code    
+    # Compile the shutdown code
     epilogue = """
 env.SaveFileMetadata()
     """

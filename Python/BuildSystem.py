@@ -65,11 +65,11 @@ class FileMetadata:
             try:
                 self.CachedModTime = os.path.getmtime(filename)
             except:
-        # If the file no longer exists, it has changed
+                # If the file no longer exists, it has changed
                 # Note this path will force the cached mod time to NOT update and call getmtime
                 # on each evaluation. This is safe and no slower than the original implementation
                 # and only triggered if you delete output files.
-            return True
+                return True
 
         # Compare modification times
         return self.CachedModTime != self.ModTime
@@ -82,7 +82,7 @@ class FileMetadata:
             # Only updates if the file exists
             # Faster than first checking to see if the file exists
             try:
-            self.ModTime = os.path.getmtime(filename)
+                self.ModTime = os.path.getmtime(filename)
             except:
                 pass
 
@@ -96,7 +96,7 @@ class FileMetadata:
             # Ensure each dependency has a metadata entry
             env.GetFileMetadata(filename)
             self.ImplicitDeps.append(filenode)
-    
+
     def SetImplicitOutputs(self, env, outputs):
 
         # Create file nodes for each dependency
@@ -117,16 +117,16 @@ class FileMetadata:
 # Metadata that persists between builds
 #
 class BuildMetadata:
-    
+
     OutputFilename = "metadata.pib"
-    
+
     def __init__(self):
 
         self.Version = 2
         self.FileMap = { }
         self.FileMetadata = { }
         self.UserData = None
-    
+
     def Save(self):
 
         with gzip.open(BuildMetadata.OutputFilename, "wb") as f:
@@ -173,7 +173,7 @@ class BuildMetadata:
     def GetFilename(self, crc):
 
         return self.FileMap[crc]
-        
+
     def GetFileMetadata(self, target, filename):
 
         # Ignore empty filenames

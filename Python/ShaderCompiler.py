@@ -78,11 +78,11 @@ class ShaderCompileNode(FXCompileNode):
         data.SetImplicitOutputs(env, scanner.Outputs)
 
         return process.returncode == 0
-    
+
     def GetOutputFiles(self, env):
 
         return super()._GetOutputFiles(env, env.CurrentConfig.ShaderCompileOptions)
-    
+
     def GetTempOutputFiles(self, env):
 
         return self.GetOutputFiles(env)

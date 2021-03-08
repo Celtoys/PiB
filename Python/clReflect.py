@@ -17,9 +17,9 @@ def _MakePath(filename):
 
 
 class CppExportNode(BuildSystem.Node):
-    
+
     def __init__(self, path, input, map_file):
-        
+
         super().__init__()
         self.Path = path
         self.Input = input
@@ -27,7 +27,7 @@ class CppExportNode(BuildSystem.Node):
         self.Dependencies = [ input, map_file ]
 
     def Build(self, env):
-        
+
         input_file = self.GetInputFile(env)
         output_file = self.GetOutputFiles(env)[0]
         Utils.Print(env, "clexport: " + os.path.basename(output_file))
@@ -64,7 +64,7 @@ class CppExportNode(BuildSystem.Node):
 
 
 class MergeNode (BuildSystem.Node):
-    
+
     def __init__(self, path, db_files, cpp_codegen):
 
         super().__init__()
@@ -161,11 +161,11 @@ class CppScanNode (BuildSystem.Node):
         Process.WaitForPipeOutput(process, output)
 
         return process.returncode == 0
-    
+
     def GetInputFile(self, env):
 
         return self.CppOutput.GetInputFile(env)
-    
+
     def GetOutputFiles(self, env):
 
         path = os.path.splitext(self.GetInputFile(env))[0]

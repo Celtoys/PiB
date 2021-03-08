@@ -29,7 +29,7 @@ import string
 # is simple and easy to understand. Adding exceptions for what we haven't seen before
 # is just as easy.
 #
-# * when you also write the build system, would you? 
+# * when you also write the build system, would you?
 #
 # Don't be afraid to write the stupid code. Don't be afraid to throw away the clever code once written
 #
@@ -82,7 +82,7 @@ SDKVersions = [
 ]
 
 
-# Locate program files 
+# Locate program files
 ProgramFilesx86 = os.getenv("ProgramFiles(x86)")
 if ProgramFilesx86 == None:
 	print("ERROR: Couldn't locate Program Files (x86) directory")
