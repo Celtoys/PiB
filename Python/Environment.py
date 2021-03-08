@@ -104,6 +104,11 @@ class Environment:
         self.ConfigName = Utils.GetSysArgvProperty("-config", "debug")
         self.Verbose = "-verbose" in sys.argv
 
+        # Show environment variables
+        if "-show_env" in sys.argv:
+            for k,v in metadata.UserData.items():
+                print(k, "=", v)
+
         # Parse any build filters in the command-line
         self.BuildTargets = Utils.GetSysArgvProperties("-target", None)
         self.BuildInputFilter = Utils.GetSysArgvProperty("-input_filter", None)
