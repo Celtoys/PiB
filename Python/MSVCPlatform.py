@@ -47,50 +47,99 @@
 #
 
 import os
+import sys
 import Utils
 import Process
 import BuildSystem
 
 
-# Locate the Visual Studio tools path using the environment
-# TODO: Using VS2010 first - how to specify override?
-VSToolsDir = os.getenv("VS100COMNTOOLS")
-if VSToolsDir == None:
-    VSToolsDir = os.getenv("VS120COMNTOOLS")
-if VSToolsDir == None:
-    VSToolsDir = os.getenv("VS110COMNTOOLS")
-if VSToolsDir == None:
-    VSToolsDir = os.getenv("VS90COMNTOOLS")
-if VSToolsDir == None:
-    VSToolsDir = os.getenv("VS80COMNTOOLS")
+VSToolsDir = None
+VCVarsPath = None
+VCIncludeDir = None
+VCLibraryDir = None
+VSCRTVer = None
 
 
-# Locate the Visual Studio install path    
-VSInstallDir = VSToolsDir
-while VSInstallDir != None and VSInstallDir != "":
-    split_path = os.path.split(VSInstallDir)
+def GetVSInstallDir(vs_tools_dir):
+
+    vs_install_dir = vs_tools_dir
+    while vs_install_dir != None and vs_install_dir != "":
+        split_path = os.path.split(vs_install_dir)
 
     # Detect infinite loop
-    if VSInstallDir == split_path[0]:
+        if vs_install_dir == split_path[0]:
         print("ERROR: Visual Studio Tools path is not formatted as expected")
         VSInstallDir = None
         break
 
-    VSInstallDir = split_path[0]
+        vs_install_dir = split_path[0]
     if split_path[1] == "Common7":
         break
 
+    return vs_install_dir
+
+
+# Allow the user to override which Visual Studio version to use
+def UserAllows(version):
+    user_msvc_ver = Utils.GetSysArgvProperty("-msvc_ver")
+    if user_msvc_ver == None:
+        return True
+    return user_msvc_ver == version
+
+# These versions use vswhere.exe but where is that? Search known directory layouts for now
+vs_2019_path = "C:/Program Files (x86)/Microsoft Visual Studio/2019"
+vs_2017_path = "C:/Program Files (x86)/Microsoft Visual Studio/2017"
+
+if VSToolsDir == None and UserAllows("2019"):
+    if os.path.exists(vs_2019_path + "/BuildTools/Common7/Tools"):
+        VSToolsDir = vs_2019_path + "/BuildTools/Common7/Tools"
+        VSCRTVer = "14.28.29333"
+
+if VSToolsDir == None and UserAllows("2017"):
+    if os.path.exists(vs_2017_path + "/Community/Common7/Tools"):
+        VSToolsDir = vs_2017_path + "/Community/Common7/Tools"
+        VSCRTVer = "14.15.26726"
+
+# Complete paths for new method
+if VSToolsDir != None:
+    VSInstallDir = GetVSInstallDir(VSToolsDir)
+    if VSInstallDir != None:
+        VCVarsPath = os.path.join(VSInstallDir, "VC/Auxiliary/Build/vcvarsall.bat")
+        VCIncludeDir = os.path.join(VSInstallDir, "VC/Tools/MSVC/" + VSCRTVer + "/include")
+        VCLibraryDir = os.path.join(VSInstallDir, "VC/Tools/MSVC/" + VSCRTVer + "/lib/x86")
+
+# Use the old method
+if VSToolsDir == None:
+    if VSToolsDir == None and UserAllows("2015"):
+        VSToolsDir = os.getenv("VS140COMNTOOLS")
+    if VSToolsDir == None and UserAllows("2013"):
+        VSToolsDir = os.getenv("VS120COMNTOOLS")
+    if VSToolsDir == None and UserAllows("2012"):
+        VSToolsDir = os.getenv("VS110COMNTOOLS")
+    if VSToolsDir == None and UserAllows("2008"):
+        VSToolsDir = os.getenv("VS90COMNTOOLS")
+    if VSToolsDir == None and UserAllows("2005"):
+        VSToolsDir = os.getenv("VS80COMNTOOLS")
+
+    VSInstallDir = GetVSInstallDir(VSToolsDir)
 
 # VC directories are a subdirectory of VS install
-VCInstallDir = None
-VCIncludeDir = None
-VCLibraryDir = None
-PlatformSDKIncludeDir = None
 if VSInstallDir != None:
-    VCInstallDir = os.path.join(VSInstallDir, "VC")
+        VCVarsPath = os.path.join(VSInstallDir, "VC/vcvarsall.bat")
     VCIncludeDir = os.path.join(VSInstallDir, "VC/include")
     VCLibraryDir = os.path.join(VSInstallDir, "VC/lib")
-    PlatformSDKIncludeDir = os.path.join(VSInstallDir, "VC/PlatformSDK/include")
+
+# Show chosen environment
+if "-msvc_show_env" in sys.argv:
+    print("VSToolsDir = ", VSToolsDir)
+    print("VSInstallDir = ", VSInstallDir)
+    print("VCVarsPath = ", VCVarsPath)
+    print("VCIncludeDir = ", VCIncludeDir)
+    print("VCLibraryDir = ", VCLibraryDir)
+
+if VSToolsDir == None:
+    print("ERROR: Failed to find installed Visual Studio")
+    sys.exit(1)
 
 
 #
@@ -110,13 +159,12 @@ def GetVisualCEnv():
         return None
 
     # Locate the batch file that sets up the Visual C build environment
-    vcvars_bat = os.path.join(VSInstallDir, "VC/vcvarsall.bat")
-    if not os.path.exists(vcvars_bat):
+    if not os.path.exists(VCVarsPath):
         print("ERROR: Visual C environment setup batch file not found")
         return None
 
     # Run the batch file, output the environment and prepare it for parsing
-    process = Process.OpenPiped(vcvars_bat + " & echo ===ENVBEGIN=== & set")
+    process = Process.OpenPiped(VCVarsPath + " x86 & echo ===ENVBEGIN=== & set")
     output = Process.WaitForPipeOutput(process)
     output = output.split("===ENVBEGIN=== \r\n")[1]
     output = output.splitlines()
@@ -267,29 +315,30 @@ class VCCompileOptions:
     def InitDebug(self):
 
         # Default settings for all compiler options
-        self.NoLogo = True
-        self.WarningLevel = 3
-        self.WarningsAsErrors = False
+        self.Alignment = 8
         self.Architecture = VCArchitecture.DEFAULT
+        self.CallingConvention = VCCallingConvention.CDECL
+        self.CRTType = VCCRTType.MT_DEBUG
+        self.CompileAsC = False
+        self.DebuggingInfo = VCDebuggingInfo.PDBEDITANDCONTINUE
+        self.Defines = [ 'WIN32', '_WINDOWS' ]
+        self.DetectBufferOverruns = True
+        self.DisabledWarnings = [ ]
+        self.EnableIntrinsicFunctions = False
+        self.ExceptionHandling = VCExceptionHandling.CPP_ONLY
         self.FloatingPoint = VCFloatingPoint.PRECISE
         self.FloatingPointExceptions = False
-        self.ExceptionHandling = VCExceptionHandling.CPP_ONLY
-        self.CallingConvention = VCCallingConvention.CDECL
-        self.DebuggingInfo = VCDebuggingInfo.PDBEDITANDCONTINUE
-        self.RuntimeChecks = True
-        self.RTTI = True
-        self.DetectBufferOverruns = True
-        self.Optimisations = VCOptimisations.DISABLE
-        self.WholeProgramOptimisation = False
-        self.EnableIntrinsicFunctions = False
-        self.CRTType = VCCRTType.MT_DEBUG
-        self.Alignment = 8
-        self.Defines = [ 'WIN32', '_WINDOWS' ]
-        self.DisabledWarnings = [ ]
+        self.FullPathnameReports = True
         self.IncludePaths = [ ]
+        self.NoLogo = True
+        self.Optimisations = VCOptimisations.DISABLE
         self.ReportClassLayout = False
         self.ReportSingleClassLayout = [ ]
-        self.FullPathnameReports = True
+        self.RTTI = True
+        self.RuntimeChecks = True
+        self.WarningLevel = 3
+        self.WarningsAsErrors = False
+        self.WholeProgramOptimisation = False
         self.UpdateCommandLine()
 
     def InitRelease(self):
@@ -313,7 +362,10 @@ class VCCompileOptions:
         cmdline = [
             '/c',                   # Compile only
             '/showIncludes',        # Show includes for dependency evaluation
-            '/errorReport:none'     # Don't send any ICEs to Microsoft
+            '/errorReport:none',    # Don't send any ICEs to Microsoft
+            '/Zc:threadSafeInit-',  # Disable C++11 thread-safe statics
+            #'/Bt+',
+            #'/d2cgsummary',
         ]
 
         # Construct the command line from the set options
@@ -378,6 +430,9 @@ class VCCompileOptions:
 
         if self.FullPathnameReports:
             cmdline += [ '/FC' ]
+
+        if self.CompileAsC:
+            cmdline += [ '/TC' ]
 
         self.CommandLine = cmdline
 
