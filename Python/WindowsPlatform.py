@@ -60,7 +60,25 @@ SDKVersions = [
 		"lib64"    : "lib\\winv6.3\\um\\x64",
 		"bin32"    : "bin\\x86",
 		"bin64"    : "bin\\x64"
-	}
+	},
+	{
+		"version"  : "10",
+		"install"  : "Windows Kits\\10",
+		"includes" : [ "include\\10.0.18362.0\\shared", "include\\10.0.18362.0\\um" ],
+		"lib32"    : "lib\\10.0.18362.0\\um\\x86",
+		"lib64"    : "lib\\10.0.18362.0\\um\\x64",
+		"bin32"    : "bin\\10.0.18362.0\\x86",
+		"bin64"    : "bin\\10.0.18362.0\\x64",
+	},
+	{
+		"version"  : "10",
+		"install"  : "Windows Kits\\10",
+		"includes" : [ "include\\10.0.16299.0\\shared", "include\\10.0.16299.0\\um" ],
+		"lib32"    : "lib\\10.0.16299.0\\um\\x86",
+		"lib64"    : "lib\\10.0.16299.0\\um\\x64",
+		"bin32"    : "bin\\10.0.16299.0\\x86",
+		"bin64"    : "bin\\10.0.16299.0\\x64",
+	},
 ]
 
 
