@@ -65,12 +65,13 @@ class CppExportNode(BuildSystem.Node):
 
 class MergeNode (BuildSystem.Node):
 
-    def __init__(self, path, db_files, cpp_codegen):
+    def __init__(self, path, db_files, cpp_codegen, h_codegen):
 
         super().__init__()
         self.Path = path
         self.Dependencies = db_files
         self.CppCodeGen = cpp_codegen
+        self.HCodeGen = h_codegen
 
     def Build(self, env):
 
@@ -82,6 +83,8 @@ class MergeNode (BuildSystem.Node):
         cmdline += [ output_file ]
         if self.CppCodeGen != None:
             cmdline += [ "-cpp_codegen", self.CppCodeGen.GetInputFile(env) ]
+        if self.HCodeGen != None:
+            cmdline += [ "-h_codegen", self.HCodeGen.GetInputFile(env) ]
         cmdline += [ file.GetOutputFiles(env)[0] for file in self.Dependencies ]
         Utils.ShowCmdLine(env, cmdline)
 
@@ -180,8 +183,8 @@ class CppScanNode (BuildSystem.Node):
 def CppScan(sys_include_paths, include_paths, defines, cpp_output):
     return CppScanNode(sys_include_paths, include_paths, defines, cpp_output)
 
-def Merge(path, db_files, cpp_codegen):
-    return MergeNode(path, db_files, cpp_codegen)
+def Merge(path, db_files, cpp_codegen, h_codegen):
+    return MergeNode(path, db_files, cpp_codegen, h_codegen)
 
 def CppExport(path, input, map_file):
     return CppExportNode(path, input, map_file)
