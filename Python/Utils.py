@@ -331,7 +331,6 @@ def ExecPibfile(pibfile, global_symbols = { }):
 from BuildSystem import *
 from Environment import *
 from Utils import *
-from MSVCGeneration import *
 from CppLanguage import *
 
 env = Environment.New()
