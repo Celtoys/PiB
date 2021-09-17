@@ -304,6 +304,15 @@ VCExceptionHandling = Utils.enum(
     CPP_SEH = '/EHa',
 )
 
+VCStandard = Utils.enum(
+    CPP_14 = '/std:c++14',
+    CPP_17 = '/std:c++17',
+    CPP_20 = '/std:c++20',
+    CPP_LATEST = '/std:c++latest',
+    C_11 = '/std:c11',
+    C_17 = '/std:c17',
+)
+
 
 class VCCompileOptions:
 
@@ -342,6 +351,7 @@ class VCCompileOptions:
         self.WarningLevel = 3
         self.WarningsAsErrors = False
         self.WholeProgramOptimisation = False
+        self.Standard = None
         self.UpdateCommandLine()
 
     def InitRelease(self):
@@ -436,6 +446,9 @@ class VCCompileOptions:
 
         if self.CompileAsC:
             cmdline += [ '/TC' ]
+        
+        if self.Standard != None:
+            cmdline += [ self.Standard ]
 
         self.CommandLine = cmdline
 
