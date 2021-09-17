@@ -94,6 +94,9 @@ if VSToolsDir == None and UserAllows("2019"):
     if os.path.exists(vs_2019_path + "/BuildTools/Common7/Tools"):
         VSToolsDir = vs_2019_path + "/BuildTools/Common7/Tools"
         VSCRTVer = "14.28.29333"
+    elif os.path.exists(vs_2019_path + "/Community/Common7/Tools"):
+        VSToolsDir = vs_2019_path + "/Community/Common7/Tools"
+        VSCRTVer = "14.28.29910"
 
 if VSToolsDir == None and UserAllows("2017"):
     if os.path.exists(vs_2017_path + "/Community/Common7/Tools"):
